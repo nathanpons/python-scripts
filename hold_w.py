@@ -21,5 +21,5 @@ def on_f6(e):
 
 keyboard.on_press_key('f6', on_f6)
 
-print("Press F6 to toggle holding 'W'. Press ESC to quit.")
-keyboard.wait('esc')
+print("Press F6 to toggle holding 'W'. Press ` to quit.")
+keyboard.wait('`')
