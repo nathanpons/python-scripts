@@ -8,6 +8,7 @@ class MainWindow:
         self.root = root
         self.root.title("Nathan's Python Scripts")
         self.root.geometry("600x400")
+        self.root.iconbitmap("src/assets/favicon.ico")
         self.current_ui = None
 
         print("Initializing Main Window GUI...")
