@@ -6,7 +6,7 @@ class MainWindow:
     def __init__(self, root):
         self.root = root
         self.root.title("Nathan's Python Scripts")
-        self.root.geometry("600x400")
+        self.root.geometry("400x450")
         self.root.iconbitmap("src/assets/favicon.ico")
         self.current_ui = None
 
