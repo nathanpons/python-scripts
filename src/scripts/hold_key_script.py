@@ -16,14 +16,14 @@ MOUSE_KEYS = {
 
 class HoldKeyScript:
     def __init__(self, hold_key="w", toggle_key="f6", is_spam_key=False):
-        self.toggle = False
         self.thread = None
+        self.hotkey_handler = None
+        self.toggle = False
         self.running = False
+        self.previous_toggle = False
+        self.is_spam_key = is_spam_key
         self.hold_key = hold_key
         self.toggle_key = toggle_key
-        self.is_spam_key = is_spam_key
-        self.previous_toggle = False
-        self.hotkey_handler = None
         self.is_mouse_key = self.hold_key in MOUSE_KEYS
 
     def hold_key_loop(self):
