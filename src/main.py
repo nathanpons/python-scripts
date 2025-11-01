@@ -1,8 +1,7 @@
-import tkinter as tk
-import ttkbootstrap as ttk
+import customtkinter as ctk
 from .gui.main_window import MainWindow
 
 if __name__ == "__main__":
-    root = ttk.Window(themename="darkly")
+    root = ctk.CTk()
     app = MainWindow(root)
     root.mainloop()
