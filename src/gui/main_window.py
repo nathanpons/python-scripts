@@ -1,5 +1,4 @@
-import tkinter as tk
-import ttkbootstrap as ttk
+import customtkinter as ctk
 from .hold_key_ui import HoldKeyUI
 
 
@@ -18,34 +17,34 @@ class MainWindow:
 
     def setup_ui(self):
         # Main frame
-        main_frame = ttk.Frame(self.root)
+        main_frame = ctk.CTkFrame(self.root)
         main_frame.pack(pady=10, padx=10, fill="x")
 
         # Header frame
-        header_frame = ttk.Frame(main_frame)
+        header_frame = ctk.CTkFrame(main_frame)
         header_frame.pack(fill="x", pady=(0, 20))
-        ttk.Label(
+        header_label = ctk.CTkLabel(
             header_frame, text="Nathan's Python Scripts", font=("Helvetica", 16)
-        ).pack()
+        )
+        header_label.pack()
 
         # Script selector
-        selection_frame = ttk.Frame(main_frame)
+        selection_frame = ctk.CTkFrame(main_frame)
         selection_frame.pack(fill="x", pady=(0, 20))
 
-        ttk.Label(header_frame, text="Select a script").pack(pady=10)
+        selection_label = ctk.CTkLabel(selection_frame, text="Select a script")
+        selection_label.pack(pady=10)
 
         self.scripts_list = ("None", "Hold_Key")
-        self.script_type = tk.StringVar()
-        self.combobox = ttk.Combobox(
-            selection_frame, textvariable=self.script_type, state="readonly"
+        self.script_type = ctk.StringVar()
+        self.combobox = ctk.CTkComboBox(
+            selection_frame, variable=self.script_type, values=self.scripts_list, command=self.on_selection
         )
-        self.combobox["values"] = self.scripts_list
-        self.combobox.current(0)
-        self.combobox.pack()
-        self.combobox.bind("<<ComboboxSelected>>", self.on_selection)
+        self.combobox.set("None")
+        self.combobox.pack(pady=10)
 
         # Dynamic content
-        self.dynamic_content_frame = ttk.Frame(main_frame)
+        self.dynamic_content_frame = ctk.CTkFrame(main_frame)
         self.dynamic_content_frame.pack(fill="both", expand=True)
 
         self.setup_default_ui()
@@ -77,7 +76,7 @@ class MainWindow:
 
     def setup_default_ui(self):
         """Sets up the default UI when no script is selected."""
-        self.default_ui_label = ttk.Label(
+        self.default_ui_label = ctk.CTkLabel(
             self.dynamic_content_frame,
             text="Please select a script from the dropdown above.",
         )
