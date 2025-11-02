@@ -1,0 +1,6 @@
+# Git ignore
+
+# Ignore Python build and distribution directories
+**/__pycache__/**
+dist/
+build/
