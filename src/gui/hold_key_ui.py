@@ -1,6 +1,6 @@
 import customtkinter as ctk
 import logging
-from ..scripts.hold_key_script import HoldKeyScript
+from scripts.hold_key_script import HoldKeyScript
 
 logging.basicConfig(
     level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s"
@@ -94,7 +94,7 @@ class HoldKeyUI:
         else:
             # Stop the script
             self.script.stop()
-            
+
             self.hold_key_combobox.configure(state="normal")
             self.toggle_key_combobox.configure(state="normal")
             self.spam_key_switch.configure(state="normal")

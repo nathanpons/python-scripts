@@ -1,5 +1,7 @@
 import customtkinter as ctk
-from .hold_key_ui import HoldKeyUI
+import sys
+import os
+from gui.hold_key_ui import HoldKeyUI
 
 
 class MainWindow:
@@ -7,9 +9,14 @@ class MainWindow:
         self.root = root
         self.root.title("Nathan's Python Scripts")
         self.root.geometry("400x450")
-        self.root.iconbitmap("src/assets/favicon.ico")
-        self.current_ui = None
 
+        if getattr(sys, 'frozen', False):
+            icon_path = os.path.join(sys._MEIPASS, "assets", "favicon.ico")
+        else:
+            icon_path = "src/assets/favicon.ico"
+        self.root.iconbitmap(icon_path)
+
+        self.current_ui = None
         print("Initializing Main Window GUI...")
         self.setup_ui()
 
