@@ -15,12 +15,13 @@ MOUSE_KEYS = {
 }
 
 class HoldKeyScript:
-    def __init__(self, hold_key="w", toggle_key="f6", is_spam_key=False):
+    def __init__(self, hold_key="w", toggle_key="f6", is_spam_key=False, interval=0.01):
         self.thread = None
         self.hotkey_handler = None
         self.toggle = False
         self.running = False
         self.previous_toggle = False
+        self.interval = interval
         self.is_spam_key = is_spam_key
         self.hold_key = hold_key
         self.toggle_key = toggle_key
@@ -67,7 +68,7 @@ class HoldKeyScript:
                         logging.debug(f"Spamming '{self.hold_key}' mouse button.")
 
                 self.previous_toggle = self.toggle
-                time.sleep(0.01)
+                time.sleep(self.interval)
 
         except Exception as e:
             logging.error(f"Error in hold_key_loop: {e}")

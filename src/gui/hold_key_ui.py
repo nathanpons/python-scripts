@@ -55,6 +55,16 @@ class HoldKeyUI:
         )
         self.spam_key_switch.grid(row=2, columnspan=2, pady=5)
 
+        # Interval settings
+        self.interval_frame = ctk.CTkFrame(config_frame)
+        self.interval_frame.grid(row=3, columnspan=2, pady=5)
+
+        self.interval_var_milliseconds = ctk.IntVar(value=10)
+        self.interval_label = ctk.CTkLabel(self.interval_frame, text="Milliseconds:")
+        self.interval_label.pack(side="left", padx=5)
+        self.interval_entry = ctk.CTkEntry(self.interval_frame, textvariable=self.interval_var_milliseconds)
+        self.interval_entry.pack(side="left", padx=5)
+
         # Control buttons
         button_frame = ctk.CTkFrame(self.parent_frame)
         button_frame.pack(pady=5)
@@ -78,8 +88,10 @@ class HoldKeyUI:
             hold_key = self.hold_key_var.get()
             toggle_key = self.toggle_key_var.get()
             is_spam_key = self.is_spam_key_var.get()
+            interval_milliseconds = self.interval_var_milliseconds.get()
+            interval = interval_milliseconds / 1000.0  # Convert to seconds
             self.script = HoldKeyScript(
-                hold_key=hold_key, toggle_key=toggle_key, is_spam_key=is_spam_key
+                hold_key=hold_key, toggle_key=toggle_key, is_spam_key=is_spam_key, interval=interval
             )
             logging.debug(
                 f"Starting Hold Key Script with hold_key='{hold_key}' and toggle_key='{toggle_key}' with is_spam_key={is_spam_key}"
