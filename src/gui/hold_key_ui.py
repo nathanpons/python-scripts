@@ -51,19 +51,22 @@ class HoldKeyUI:
         # Spam Key Switch
         self.is_spam_key_var = ctk.BooleanVar(value=False)
         self.spam_key_switch = ctk.CTkSwitch(
-            config_frame, text="Spam Key Instead of Hold", variable=self.is_spam_key_var
+            config_frame, text="Spam Key Instead of Hold", variable=self.is_spam_key_var, command=self.toggle_interval_ui
         )
         self.spam_key_switch.grid(row=2, columnspan=2, pady=5)
 
         # Interval settings
         self.interval_frame = ctk.CTkFrame(config_frame)
-        self.interval_frame.grid(row=3, columnspan=2, pady=5)
+        self.interval_frame_label = ctk.CTkLabel(self.interval_frame, text="Interval:")
+        self.interval_frame_label.pack(side="top", padx=5)
 
         self.interval_var_milliseconds = ctk.IntVar(value=10)
-        self.interval_label = ctk.CTkLabel(self.interval_frame, text="Milliseconds:")
+        self.interval_label = ctk.CTkLabel(self.interval_frame, text="Milliseconds:", )
         self.interval_label.pack(side="left", padx=5)
         self.interval_entry = ctk.CTkEntry(self.interval_frame, textvariable=self.interval_var_milliseconds)
         self.interval_entry.pack(side="left", padx=5)
+
+        self.interval_frame_visible = False
 
         # Control buttons
         button_frame = ctk.CTkFrame(self.parent_frame)
@@ -115,6 +118,17 @@ class HoldKeyUI:
 
             self.status_label.configure(text="Status: Stopped")
             self.toggle_script_button_text.set("Start")
+
+    def toggle_interval_ui(self):
+        """Toggles the visibility of the interval settings UI."""
+        if self.spam_key_switch.get():
+            if not self.interval_frame_visible:
+                self.interval_frame.grid(row=3, columnspan=2, pady=5)
+                self.interval_frame_visible = True
+        else:
+            if self.interval_frame_visible:
+                self.interval_frame.grid_forget()
+                self.interval_frame_visible = False
 
     def toggle_hold(self):
         """Toggles the hold state of the script."""

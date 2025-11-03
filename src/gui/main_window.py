@@ -8,7 +8,7 @@ class MainWindow:
     def __init__(self, root):
         self.root = root
         self.root.title("Nathan's Python Scripts")
-        self.root.geometry("400x450")
+        self.root.geometry("400x500")
 
         if getattr(sys, 'frozen', False):
             icon_path = os.path.join(sys._MEIPASS, "assets", "favicon.ico")
