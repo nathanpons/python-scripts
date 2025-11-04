@@ -1,7 +1,11 @@
 # Git ignore
 
-# Ignore Python build and distribution directories
+# Python build and distribution directories
 __pycache__/
 dist/
 build/
 *.spec
+
+# Environment Variables
+
+.env
