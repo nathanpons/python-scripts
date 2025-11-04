@@ -2,10 +2,11 @@ import customtkinter as ctk
 import sys
 import os
 from gui.hold_key_ui import HoldKeyUI
+from gui.weather_ui import WeatherUI
 
 
 class MainWindow:
-    def __init__(self, root):
+    def __init__(self, root, weather_api_key=None):
         self.root = root
         self.root.title("Nathan's Python Scripts")
         self.root.geometry("400x500")
@@ -17,6 +18,8 @@ class MainWindow:
         self.root.iconbitmap(icon_path)
 
         self.current_ui = None
+        self.scripts_list = ["None", "Hold_Key", "Weather"]
+        self.weather_api_key = weather_api_key
         print("Initializing Main Window GUI...")
         self.setup_ui()
 
@@ -42,7 +45,6 @@ class MainWindow:
         selection_label = ctk.CTkLabel(selection_frame, text="Select a script")
         selection_label.pack(pady=10)
 
-        self.scripts_list = ("None", "Hold_Key")
         self.script_type = ctk.StringVar()
         self.combobox = ctk.CTkComboBox(
             selection_frame, variable=self.script_type, values=self.scripts_list, command=self.on_selection
@@ -66,6 +68,8 @@ class MainWindow:
         match selection:
             case "Hold_Key":
                 self.setup_hold_key_ui()
+            case "Weather":
+                self.setup_weather_ui()
             case _:
                 self.setup_default_ui()
 
@@ -80,6 +84,10 @@ class MainWindow:
     def setup_hold_key_ui(self):
         """Sets up the UI for the Hold Key script."""
         self.current_ui = HoldKeyUI(self.dynamic_content_frame)
+
+    def setup_weather_ui(self):
+        """Sets up the UI for the Weather script."""
+        self.current_ui = WeatherUI(self.dynamic_content_frame, api_key=self.weather_api_key)
 
     def setup_default_ui(self):
         """Sets up the default UI when no script is selected."""
