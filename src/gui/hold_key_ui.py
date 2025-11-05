@@ -6,10 +6,18 @@ logging.basicConfig(
     level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s"
 )
 
+
 class HoldKeyUI:
     def __init__(self, parent_frame):
         self.parent_frame = parent_frame
         self.script = None
+
+        self.default_font = ctk.CTkFont(family="Helvetica", size=16)
+        self.title_font = ctk.CTkFont(
+            family=self.default_font.cget("family"),
+            size=self.default_font.cget("size") + 4,
+            weight="bold",
+        )
 
         self.hold_keys = ["left mouse", "right mouse", "w", "a", "s", "d"]
         self.toggle_keys = ["f6", "f7", "f8", "f9"]
@@ -19,7 +27,9 @@ class HoldKeyUI:
     def setup_ui(self):
         """Sets up the UI components for the Hold Key script."""
         # Title
-        self.title_label = ctk.CTkLabel(self.parent_frame, text="Hold Key Script")
+        self.title_label = ctk.CTkLabel(
+            self.parent_frame, text="Hold Key Script", font=self.title_font
+        )
         self.title_label.pack(pady=10)
 
         # Configuration frame
@@ -27,43 +37,63 @@ class HoldKeyUI:
         config_frame.pack(pady=5)
 
         # Hold Key selection
-        self.hold_key_label = ctk.CTkLabel(config_frame, text="Select Key to Hold:")
+        self.hold_key_label = ctk.CTkLabel(
+            config_frame, text="Select Key to Hold:", font=self.default_font
+        )
         self.hold_key_label.grid(row=0, column=0, sticky="w", padx=5, pady=2)
         self.hold_key_var = ctk.StringVar(value=self.hold_keys[0])
-        self.hold_key_combobox = ctk.CTkComboBox(
+        self.hold_key_combobox = ctk.CTkOptionMenu(
             config_frame,
             variable=self.hold_key_var,
             values=self.hold_keys,
+            font=self.default_font,
         )
         self.hold_key_combobox.grid(row=0, column=1, padx=5, pady=2)
 
         # Toggle Key selection
-        self.toggle_key_label = ctk.CTkLabel(config_frame, text="Select Toggle Key:")
+        self.toggle_key_label = ctk.CTkLabel(
+            config_frame, text="Select Toggle Key:", font=self.default_font
+        )
         self.toggle_key_label.grid(row=1, column=0, sticky="w", padx=5, pady=2)
         self.toggle_key_var = ctk.StringVar(value=self.toggle_keys[0])
-        self.toggle_key_combobox = ctk.CTkComboBox(
+        self.toggle_key_combobox = ctk.CTkOptionMenu(
             config_frame,
             variable=self.toggle_key_var,
             values=self.toggle_keys,
+            font=self.default_font,
         )
         self.toggle_key_combobox.grid(row=1, column=1, padx=5, pady=2)
 
         # Spam Key Switch
         self.is_spam_key_var = ctk.BooleanVar(value=False)
         self.spam_key_switch = ctk.CTkSwitch(
-            config_frame, text="Spam Key Instead of Hold", variable=self.is_spam_key_var, command=self.toggle_interval_ui
+            config_frame,
+            text="Spam Key Instead of Hold",
+            variable=self.is_spam_key_var,
+            font=self.default_font,
+            command=self.toggle_interval_ui,
         )
         self.spam_key_switch.grid(row=2, columnspan=2, pady=5)
 
         # Interval settings
         self.interval_frame = ctk.CTkFrame(config_frame)
-        self.interval_frame_label = ctk.CTkLabel(self.interval_frame, text="Interval:")
+        self.interval_frame_label = ctk.CTkLabel(
+            self.interval_frame, text="Interval:", font=self.default_font
+        )
         self.interval_frame_label.pack(side="top", padx=5)
 
         self.interval_var_milliseconds = ctk.IntVar(value=10)
-        self.interval_label = ctk.CTkLabel(self.interval_frame, text="Milliseconds:", )
+        self.interval_label = ctk.CTkLabel(
+            self.interval_frame,
+            text="Milliseconds:",
+            font=self.default_font,
+        )
         self.interval_label.pack(side="left", padx=5)
-        self.interval_entry = ctk.CTkEntry(self.interval_frame, textvariable=self.interval_var_milliseconds)
+        self.interval_entry = ctk.CTkEntry(
+            self.interval_frame,
+            textvariable=self.interval_var_milliseconds,
+            font=self.default_font,
+        )
         self.interval_entry.pack(side="left", padx=5)
 
         self.interval_frame_visible = False
@@ -76,12 +106,15 @@ class HoldKeyUI:
         self.toggle_script_button = ctk.CTkButton(
             button_frame,
             textvariable=self.toggle_script_button_text,
+            font=self.default_font,
             command=self.toggle_script,
         )
-        self.toggle_script_button.pack(side="left", padx=5)
+        self.toggle_script_button.pack(side="left")
 
         # Status label
-        self.status_label = ctk.CTkLabel(self.parent_frame, text="Status: Stopped")
+        self.status_label = ctk.CTkLabel(
+            self.parent_frame, text="Status: Stopped", font=self.default_font
+        )
         self.status_label.pack(pady=10)
 
     def toggle_script(self):
@@ -94,7 +127,10 @@ class HoldKeyUI:
             interval_milliseconds = self.interval_var_milliseconds.get()
             interval = interval_milliseconds / 1000.0  # Convert to seconds
             self.script = HoldKeyScript(
-                hold_key=hold_key, toggle_key=toggle_key, is_spam_key=is_spam_key, interval=interval
+                hold_key=hold_key,
+                toggle_key=toggle_key,
+                is_spam_key=is_spam_key,
+                interval=interval,
             )
             logging.debug(
                 f"Starting Hold Key Script with hold_key='{hold_key}' and toggle_key='{toggle_key}' with is_spam_key={is_spam_key}"
