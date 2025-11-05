@@ -1,24 +1,34 @@
+import logging
 import customtkinter as ctk
 import sys
 import os
 from gui.hold_key_ui import HoldKeyUI
 from gui.weather_ui import WeatherUI
 
+WINDOW_SIZE = "400x500"
+
 
 class MainWindow:
     def __init__(self, root, weather_api_key=None):
         self.root = root
         self.root.title("Nathan's Python Scripts")
-        self.root.geometry("400x500")
+        self.root.geometry(WINDOW_SIZE)
 
-        if getattr(sys, 'frozen', False):
+        self.default_font = ctk.CTkFont(family="Helvetica", size=16)
+        self.title_font = ctk.CTkFont(
+            family=self.default_font.cget("family"),
+            size=self.default_font.cget("size") + 4,
+            weight="bold",
+        )
+
+        if getattr(sys, "frozen", False):
             icon_path = os.path.join(sys._MEIPASS, "assets", "favicon.ico")
         else:
             icon_path = "src/assets/favicon.ico"
         self.root.iconbitmap(icon_path)
 
         self.current_ui = None
-        self.scripts_list = ["None", "Hold_Key", "Weather"]
+        self.scripts_list = ["None", "Hold Key", "Weather"]
         self.weather_api_key = weather_api_key
         print("Initializing Main Window GUI...")
         self.setup_ui()
@@ -32,41 +42,47 @@ class MainWindow:
 
         # Header frame
         header_frame = ctk.CTkFrame(main_frame)
-        header_frame.pack(fill="x", pady=(0, 20))
+        header_frame.pack(fill="x", padx=10, pady=10)
         header_label = ctk.CTkLabel(
-            header_frame, text="Nathan's Python Scripts", font=("Helvetica", 16)
+            header_frame, text="Nathan's Python Scripts", font=self.title_font, height=50
         )
         header_label.pack()
 
         # Script selector
         selection_frame = ctk.CTkFrame(main_frame)
-        selection_frame.pack(fill="x", pady=(0, 20))
+        selection_frame.pack(fill="x", padx=10, pady=10)
 
-        selection_label = ctk.CTkLabel(selection_frame, text="Select a script")
-        selection_label.pack(pady=10)
+        selection_label = ctk.CTkLabel(
+            selection_frame, text="Select a script:", font=self.default_font
+        )
+        selection_label.pack(pady=5)
 
         self.script_type = ctk.StringVar()
         self.combobox = ctk.CTkComboBox(
-            selection_frame, variable=self.script_type, values=self.scripts_list, command=self.on_selection
+            selection_frame,
+            variable=self.script_type,
+            values=self.scripts_list,
+            font=self.default_font,
+            command=self.on_selection,
         )
         self.combobox.set("None")
-        self.combobox.pack(pady=10)
+        self.combobox.pack(pady=(0, 10))
 
         # Dynamic content
         self.dynamic_content_frame = ctk.CTkFrame(main_frame)
-        self.dynamic_content_frame.pack(fill="both", expand=True)
+        self.dynamic_content_frame.pack(fill="both", expand=True, padx=10, pady=10)
 
         self.setup_default_ui()
 
     def on_selection(self, event):
         """Called when a new script is selected."""
         selection = self.script_type.get()
-        print(f"Script selected: {selection}")
+        logging.info(f"Script selected: {selection}")
 
         self.clear_dynamic_content()
 
         match selection:
-            case "Hold_Key":
+            case "Hold Key":
                 self.setup_hold_key_ui()
             case "Weather":
                 self.setup_weather_ui()
@@ -84,23 +100,36 @@ class MainWindow:
     def setup_hold_key_ui(self):
         """Sets up the UI for the Hold Key script."""
         self.current_ui = HoldKeyUI(self.dynamic_content_frame)
+        width, height = WINDOW_SIZE.split("x")
+        if self.root.winfo_width() < int(width) and self.root.winfo_height() < int(
+            height
+        ):
+            self.root.geometry(WINDOW_SIZE)
+            logging.info(f"Upscaled window to default size: {WINDOW_SIZE}")
 
     def setup_weather_ui(self):
         """Sets up the UI for the Weather script."""
-        self.current_ui = WeatherUI(self.dynamic_content_frame, api_key=self.weather_api_key)
+        self.current_ui = WeatherUI(
+            self.dynamic_content_frame, api_key=self.weather_api_key
+        )
+        width, height = 1000, 600
+        if self.root.winfo_width() < width and self.root.winfo_height() < height:
+            self.root.geometry(f"{width}x{height}")
+            logging.info(f"Upscaled window to size: {width}x{height}")
 
     def setup_default_ui(self):
         """Sets up the default UI when no script is selected."""
         self.default_ui_label = ctk.CTkLabel(
             self.dynamic_content_frame,
             text="Please select a script from the dropdown above.",
+            font=self.default_font,
         )
         self.default_ui_label.pack(pady=20)
 
     def on_close(self):
         """Handles cleanup on window close."""
         if self.current_ui and hasattr(self.current_ui, "cleanup"):
-            print("Closing application and cleaning up resources...")
+            logging.info("Closing application and cleaning up resources...")
             self.current_ui.cleanup()
-            print("Cleanup complete.")
+            logging.info("Cleanup complete.")
         self.root.destroy()
