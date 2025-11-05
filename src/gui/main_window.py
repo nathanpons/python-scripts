@@ -58,7 +58,7 @@ class MainWindow:
         selection_label.pack(pady=5)
 
         self.script_type = ctk.StringVar()
-        self.combobox = ctk.CTkComboBox(
+        self.combobox = ctk.CTkOptionMenu(
             selection_frame,
             variable=self.script_type,
             values=self.scripts_list,
