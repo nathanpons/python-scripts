@@ -42,7 +42,7 @@ class WeatherUI:
         self.location_frame.grid(column=0, row=1, sticky="nsew", padx=10, pady=10)
 
         self.location_label = ctk.CTkLabel(
-            self.location_frame, text="Enter City or Country:", font=self.default_font
+            self.location_frame, text="Enter Location:", font=self.default_font
         )
         self.location_label.pack(padx=10, pady=5)
 
