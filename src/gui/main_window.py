@@ -4,15 +4,15 @@ import sys
 import os
 from gui.hold_key_ui import HoldKeyUI
 from gui.weather_ui import WeatherUI
-
-WINDOW_SIZE = "400x500"
+from gui.recipe_ui import RecipeUI
 
 
 class MainWindow:
-    def __init__(self, root, weather_api_key=None):
+    def __init__(self, root, weather_api_key=None, recipe_api_key=None):
         self.root = root
+        self.WINDOW_SIZE = "400x500"
         self.root.title("Nathan's Python Scripts")
-        self.root.geometry(WINDOW_SIZE)
+        self.root.geometry(self.WINDOW_SIZE)
 
         self.default_font = ctk.CTkFont(family="Helvetica", size=16)
         self.title_font = ctk.CTkFont(
@@ -28,8 +28,9 @@ class MainWindow:
         self.root.iconbitmap(icon_path)
 
         self.current_ui = None
-        self.scripts_list = ["None", "Hold Key", "Weather"]
+        self.scripts_list = ["None", "Hold Key", "Weather", "Recipe Finder"]
         self.weather_api_key = weather_api_key
+        self.recipe_api_key = recipe_api_key
         print("Initializing Main Window GUI...")
         self.setup_ui()
 
@@ -38,13 +39,16 @@ class MainWindow:
     def setup_ui(self):
         # Main frame
         main_frame = ctk.CTkFrame(self.root)
-        main_frame.pack(pady=10, padx=10, fill="x")
+        main_frame.pack(pady=10, padx=10, expand=True, fill="both")
 
         # Header frame
         header_frame = ctk.CTkFrame(main_frame)
         header_frame.pack(fill="x", padx=10, pady=10)
         header_label = ctk.CTkLabel(
-            header_frame, text="Nathan's Python Scripts", font=self.title_font, height=50
+            header_frame,
+            text="Nathan's Python Scripts",
+            font=self.title_font,
+            height=50,
         )
         header_label.pack()
 
@@ -86,6 +90,8 @@ class MainWindow:
                 self.setup_hold_key_ui()
             case "Weather":
                 self.setup_weather_ui()
+            case "Recipe Finder":
+                self.setup_recipe_ui()
             case _:
                 self.setup_default_ui()
 
@@ -100,22 +106,53 @@ class MainWindow:
     def setup_hold_key_ui(self):
         """Sets up the UI for the Hold Key script."""
         self.current_ui = HoldKeyUI(self.dynamic_content_frame)
-        width, height = WINDOW_SIZE.split("x")
+        width, height = self.WINDOW_SIZE.split("x")
         if self.root.winfo_width() < int(width) and self.root.winfo_height() < int(
             height
         ):
-            self.root.geometry(WINDOW_SIZE)
-            logging.info(f"Upscaled window to default size: {WINDOW_SIZE}")
+            self.root.geometry(self.WINDOW_SIZE)
+            logging.info(f"Upscaled window to default size: {self.WINDOW_SIZE}")
 
     def setup_weather_ui(self):
         """Sets up the UI for the Weather script."""
-        self.current_ui = WeatherUI(
-            self.dynamic_content_frame, api_key=self.weather_api_key
-        )
-        width, height = 1000, 600
-        if self.root.winfo_width() < width and self.root.winfo_height() < height:
-            self.root.geometry(f"{width}x{height}")
-            logging.info(f"Upscaled window to size: {width}x{height}")
+        if self.weather_api_key:
+            self.current_ui = WeatherUI(
+                self.dynamic_content_frame, api_key=self.weather_api_key
+            )
+            width, height = 1000, 600
+            if self.root.winfo_width() < width and self.root.winfo_height() < height:
+                self.root.geometry(f"{width}x{height}")
+                logging.info(f"Upscaled window to size: {width}x{height}")
+        else:
+            error_label = ctk.CTkLabel(
+                self.dynamic_content_frame,
+                text="Error: WEATHER_API_KEY not found in environment variables.",
+                font=self.default_font,
+                text_color="red",
+            )
+            error_label.pack(pady=20)
+            logging.error("WEATHER_API_KEY not found in environment variables.")
+
+    def setup_recipe_ui(self):
+        """Sets up the UI for the Recipe Finder script."""
+        if self.recipe_api_key:
+            logging.debug("API Key found, initializing RecipeUI.")
+            self.current_ui = RecipeUI(
+                self.dynamic_content_frame, api_key=self.recipe_api_key
+            )
+            width, height = 1000, 600
+            if self.root.winfo_width() < width and self.root.winfo_height() < height:
+                self.root.geometry(f"{width}x{height}")
+                logging.info(f"Upscaled window to size: {width}x{height}")
+        else:
+            error_label = ctk.CTkLabel(
+                self.dynamic_content_frame,
+                text="Error: RECIPE_API_KEY not found in environment variables.",
+                font=self.default_font,
+                text_color="red",
+            )
+            error_label.pack(pady=20)
+            logging.error("RECIPE_API_KEY not found in environment variables.")
 
     def setup_default_ui(self):
         """Sets up the default UI when no script is selected."""

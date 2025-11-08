@@ -81,7 +81,7 @@ class WeatherUI:
         self.weather_icon.grid(row=1, column=0, padx=10, pady=10)
 
         self.weather_info_label = ctk.CTkLabel(
-            self.weather_frame, text="Weather Information",font=self.default_font
+            self.weather_frame, text="Weather Information", font=self.default_font
         )
         self.weather_info_label.grid(row=2, column=0, columnspan=2, padx=10, pady=10)
 
