@@ -15,6 +15,7 @@ urllib3*/
 
 # AWS Lambda deployment packages
 *.zip
+config/
 
 # Environment Variables
 .env
