@@ -31,11 +31,17 @@ A modern desktop application built with Python and CustomTkinter that provides u
 
  - There are a few options for installation. 
 
- 1. Download the official release on the 'Releases' tab on GitHub and running the EXE file.
- 2. Cloning the repository and running the app through local code.
+ 1. Download the official release on the 'Releases' tab on GitHub and running the .EXE file. (Recommended)
+   
+ 2. Cloning the repository and running the app through local code and creating an AWS cloud environment. You will need your own API keys for **Spoonacular** and **OpenWeatherApi**.
     ```bash
     git clone https://github.com/PapsBurr/python-scripts.git
     cd python-scripts
-    pip install
+    pip install -r requirements
+    python lambda/create_lambda_package.py
+    cd terraform
+    terraform init
+    terraform apply
     python src/main.py
     ```
+    **If you just wish to use the automation scripts you do not need to run the 'lambda/create_lambda_package.py' or terraform commands.**
