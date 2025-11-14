@@ -13,6 +13,9 @@ build/
 .terraform*
 urllib3*/
 
+# AWS Lambda deployment packages
+*.zip
+
 # Environment Variables
 .env
 *.tfvars
