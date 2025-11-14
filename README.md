@@ -42,6 +42,7 @@ A modern desktop application built with Python and CustomTkinter that provides u
     cd terraform
     terraform init
     terraform apply
+    cd ..
     python src/main.py
     ```
     **If you just wish to use the automation scripts you do not need to run the 'lambda/create_lambda_package.py' or terraform commands.**
