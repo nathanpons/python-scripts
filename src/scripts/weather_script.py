@@ -2,6 +2,7 @@ import json
 import requests
 import logging
 import os
+import sys
 
 logging.basicConfig(
     level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s"
@@ -9,12 +10,21 @@ logging.basicConfig(
 logging.getLogger("urllib3").setLevel(logging.WARNING)
 logging.getLogger("requests").setLevel(logging.WARNING)
 
+def get_resource_path(relative_path):
+    """Get absolute path to resource, works for dev and for PyInstaller"""
+    if getattr(sys, 'frozen', False):
+        # Running as bundled executable
+        base_path = sys._MEIPASS
+        return os.path.join(base_path, relative_path)
+    else:
+        # Running as script
+        base_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        return os.path.join(base_path, "src", relative_path)
+
 
 class WeatherScript:
     def __init__(self):
-        config_path = os.path.join(
-            os.path.dirname(__file__), "..", "config", "api_config.json"
-        )
+        config_path = get_resource_path("config/api_config.json")
         logging.debug(f"Loading configuration from: {config_path}")
 
         try:
@@ -66,7 +76,13 @@ class WeatherScript:
             return {"error": "Exception occurred while fetching data"}
 
     def get_icon_path(self, icon_code):
-        icon_path = f"src/assets/weather/weather_icon_{icon_code}.png"
+        weather_dir = get_resource_path("assets/weather")
+        if not os.path.exists(weather_dir):
+            os.makedirs(weather_dir)
+            logging.debug(f"Weather directory created at path: {weather_dir}")
+
+        icon_path = os.path.join(weather_dir, f"weather_icon_{icon_code}.png")
+        logging.debug(f"Icon path: {icon_path}")
         if os.path.exists(icon_path):
             logging.debug(f"Icon already exists at path: {icon_path}")
             return icon_path
