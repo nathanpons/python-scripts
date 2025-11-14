@@ -12,6 +12,7 @@ build/
 .terraform/
 .terraform*
 urllib3*/
+*.tfstate*
 
 # AWS Lambda deployment packages
 *.zip
