@@ -8,7 +8,7 @@ from gui.recipe_ui import RecipeUI
 
 
 class MainWindow:
-    def __init__(self, root, weather_api_key=None, recipe_api_key=None):
+    def __init__(self, root):
         self.root = root
         self.WINDOW_SIZE = "400x500"
         self.root.title("Nathan's Python Scripts")
@@ -29,8 +29,6 @@ class MainWindow:
 
         self.current_ui = None
         self.scripts_list = ["None", "Hold Key", "Weather", "Recipe Finder"]
-        self.weather_api_key = weather_api_key
-        self.recipe_api_key = recipe_api_key
         print("Initializing Main Window GUI...")
         self.setup_ui()
 
@@ -115,44 +113,23 @@ class MainWindow:
 
     def setup_weather_ui(self):
         """Sets up the UI for the Weather script."""
-        if self.weather_api_key:
-            self.current_ui = WeatherUI(
-                self.dynamic_content_frame, api_key=self.weather_api_key
-            )
-            width, height = 1000, 600
-            if self.root.winfo_width() < width and self.root.winfo_height() < height:
-                self.root.geometry(f"{width}x{height}")
-                logging.info(f"Upscaled window to size: {width}x{height}")
-        else:
-            error_label = ctk.CTkLabel(
-                self.dynamic_content_frame,
-                text="Error: WEATHER_API_KEY not found in environment variables.",
-                font=self.default_font,
-                text_color="red",
-            )
-            error_label.pack(pady=20)
-            logging.error("WEATHER_API_KEY not found in environment variables.")
+        self.current_ui = WeatherUI(
+            self.dynamic_content_frame
+        )
+        width, height = 1000, 600
+        if self.root.winfo_width() < width and self.root.winfo_height() < height:
+            self.root.geometry(f"{width}x{height}")
+            logging.info(f"Upscaled window to size: {width}x{height}")
 
     def setup_recipe_ui(self):
         """Sets up the UI for the Recipe Finder script."""
-        if self.recipe_api_key:
-            logging.debug("API Key found, initializing RecipeUI.")
-            self.current_ui = RecipeUI(
-                self.dynamic_content_frame, api_key=self.recipe_api_key
-            )
-            width, height = 1000, 600
-            if self.root.winfo_width() < width and self.root.winfo_height() < height:
-                self.root.geometry(f"{width}x{height}")
-                logging.info(f"Upscaled window to size: {width}x{height}")
-        else:
-            error_label = ctk.CTkLabel(
-                self.dynamic_content_frame,
-                text="Error: RECIPE_API_KEY not found in environment variables.",
-                font=self.default_font,
-                text_color="red",
-            )
-            error_label.pack(pady=20)
-            logging.error("RECIPE_API_KEY not found in environment variables.")
+        self.current_ui = RecipeUI(
+            self.dynamic_content_frame
+        )
+        width, height = 1000, 600
+        if self.root.winfo_width() < width and self.root.winfo_height() < height:
+            self.root.geometry(f"{width}x{height}")
+            logging.info(f"Upscaled window to size: {width}x{height}")
 
     def setup_default_ui(self):
         """Sets up the default UI when no script is selected."""

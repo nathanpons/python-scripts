@@ -9,9 +9,9 @@ logging.getLogger("urllib3").setLevel(logging.WARNING)
 logging.getLogger("requests").setLevel(logging.WARNING)
 
 class RecipeUI:
-    def __init__(self, parent_frame, api_key):
+    def __init__(self, parent_frame):
         self.parent_frame = parent_frame
-        self.script = RecipeScript(api_key)
+        self.script = RecipeScript()
 
         self.default_font = ctk.CTkFont(family="Helvetica", size=16)
         self.title_font = ctk.CTkFont(

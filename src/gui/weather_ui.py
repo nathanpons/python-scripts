@@ -4,10 +4,9 @@ from scripts.weather_script import WeatherScript
 
 
 class WeatherUI:
-    def __init__(self, parent, api_key):
+    def __init__(self, parent):
         self.parent = parent
-        self.api_key = api_key
-        self.weather_script = WeatherScript(api_key)
+        self.weather_script = WeatherScript()
 
         self.default_font = ctk.CTkFont(family="Helvetica", size=16)
         self.title_font = ctk.CTkFont(
