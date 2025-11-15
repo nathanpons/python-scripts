@@ -2,11 +2,27 @@
 
 ideas.md
 
-# Python build and distribution directories
+# Distribution / packaging
 __pycache__/
 dist/
 build/
 *.spec
+.pytest_cache/
+*.egg-info/
+.eggs/
+
+# Test coverage
+htmlcov/
+.coverage
+.coverage.*
+
+# Python virtual environments
+venv/
+env/
+.venv/
+
+# IDE specific files
+.vscode/
 
 # Terraform files
 .terraform/
