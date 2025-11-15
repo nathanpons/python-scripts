@@ -119,7 +119,7 @@ class HoldKeyUI:
 
     def toggle_script(self):
         """Toggles the Hold Key script."""
-        if self.script is None or not self.script.running:
+        if self.script is None or not self.script.is_running:
             # Start the script
             hold_key = self.hold_key_var.get()
             toggle_key = self.toggle_key_var.get()
@@ -168,11 +168,11 @@ class HoldKeyUI:
 
     def toggle_hold(self):
         """Toggles the hold state of the script."""
-        if self.script and self.script.running:
+        if self.script and self.script.is_running:
             self.script.toggle_hold()
             logging.debug(f"Toggled hold state: {self.script.toggle}")
 
     def cleanup(self):
         """Cleans up the script on UI destruction."""
-        if self.script and self.script.running:
+        if self.script and self.script.is_running:
             self.script.stop()

@@ -19,7 +19,7 @@ class HoldKeyScript:
         self.thread = None
         self.hotkey_handler = None
         self.toggle = False
-        self.running = False
+        self.is_running = False
         self.previous_toggle = False
         self.interval = interval
         self.is_spam_key = is_spam_key
@@ -30,7 +30,7 @@ class HoldKeyScript:
     def hold_key_loop(self):
         """Main loop that holds or spams a key"""
         try:
-            while self.running:
+            while self.is_running:
                 if not self.is_mouse_key:
                     # Regular keyboard key handling
                     # Check for toggle state change
@@ -77,16 +77,16 @@ class HoldKeyScript:
 
     def start(self):
         """Starts the hold hold_key script."""
-        if not self.running:
-            self.running = True
+        if not self.is_running:
+            self.is_running = True
             self.hotkey_handler = keyboard.add_hotkey(self.toggle_key, self.toggle_hold)
             self.thread = threading.Thread(target=self.hold_key_loop, daemon=True)
             self.thread.start()
 
     def stop(self):
         """Stops the hold hold_key script."""
-        if self.running:
-            self.running = False
+        if self.is_running:
+            self.is_running = False
             self.toggle = False
             if self.is_mouse_key:
                 mouse_button = MOUSE_KEYS.get(self.hold_key)

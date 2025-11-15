@@ -23,7 +23,7 @@ class TestHoldKeyScriptStartStop:
         """Test starting the HoldKeyScript."""
         script = HoldKeyScript()
 
-        assert not script.running
+        assert not script.is_running
 
         script.start()
-        assert script.running
+        assert script.is_running
