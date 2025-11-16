@@ -14,6 +14,8 @@ MOUSE_KEYS = {
     "middle mouse": "middle"
 }
 
+# TODO: Add list of all valid keyboard keys for validation
+
 class HoldKeyScript:
     def __init__(self, hold_key="w", toggle_key="f6", is_spam_key=False, interval=0.01):
         self.thread = None
@@ -36,7 +38,7 @@ class HoldKeyScript:
                     # Check for toggle state change
                     if self.toggle and not self.previous_toggle:
                         if self.is_spam_key:
-                            logging.debug(f"Spamming '{self.hold_key}'.")
+                            logging.debug(f"Pressing '{self.hold_key}'.")
                         else:
                             logging.debug(f"Holding '{self.hold_key}'.")
                             keyboard.press(self.hold_key)
@@ -48,14 +50,14 @@ class HoldKeyScript:
 
                     if self.toggle and self.is_spam_key:
                         keyboard.press_and_release(self.hold_key)
-                        logging.debug(f"Spamming '{self.hold_key}'.")
+                        logging.debug(f"Pressing '{self.hold_key}'.")
 
                 else:
                     # Mouse handling
                     mouse_button = MOUSE_KEYS.get(self.hold_key)
                     if self.toggle and not self.previous_toggle:
                         if self.is_spam_key:
-                            logging.debug(f"Spamming '{self.hold_key}' mouse button.")
+                            logging.debug(f"Clicking '{self.hold_key}' mouse button.")
                         else:
                             logging.debug(f"Holding '{self.hold_key}' mouse button.")
                             pyautogui.mouseDown(button=mouse_button)
@@ -65,7 +67,7 @@ class HoldKeyScript:
                     
                     if self.toggle and self.is_spam_key:
                         pyautogui.click(button=mouse_button)
-                        logging.debug(f"Spamming '{self.hold_key}' mouse button.")
+                        logging.debug(f"Clicking '{self.hold_key}' mouse button.")
 
                 self.previous_toggle = self.toggle
                 time.sleep(self.interval)
@@ -77,11 +79,20 @@ class HoldKeyScript:
 
     def start(self):
         """Starts the hold hold_key script."""
-        if not self.is_running:
-            self.is_running = True
-            self.hotkey_handler = keyboard.add_hotkey(self.toggle_key, self.toggle_hold)
-            self.thread = threading.Thread(target=self.hold_key_loop, daemon=True)
-            self.thread.start()
+        try:
+            if self.interval <= 0:
+                raise ValueError("Interval must be a positive number.")
+            if not self.is_running:
+                self.is_running = True
+                self.hotkey_handler = keyboard.add_hotkey(self.toggle_key, self.toggle_hold)
+                self.thread = threading.Thread(target=self.hold_key_loop, daemon=True)
+                self.thread.start()
+        except ValueError as e:
+            logging.error(f"Invalid key specified: {e}")
+            raise
+        except Exception as e:
+            logging.error(f"Error starting hold_key_script: {e}")
+            raise
 
     def stop(self):
         """Stops the hold hold_key script."""
