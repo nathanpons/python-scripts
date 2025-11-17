@@ -29,7 +29,7 @@ class MainWindow:
 
         self.current_ui = None
         self.scripts_list = ["None", "Hold Key", "Weather", "Recipe Finder"]
-        print("Initializing Main Window GUI...")
+        logging.info("Main window initializing...")
         self.setup_ui()
 
         self.root.protocol("WM_DELETE_WINDOW", self.on_close)
