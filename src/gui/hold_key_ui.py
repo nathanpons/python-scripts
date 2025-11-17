@@ -80,22 +80,29 @@ class HoldKeyUI:
         self.interval_frame_label = ctk.CTkLabel(
             self.interval_frame, text="Interval:", font=self.default_font
         )
-        self.interval_frame_label.pack(side="top", padx=5)
+        self.interval_frame_label.grid(row=3, column=0, sticky="w", padx=5)
 
-        self.interval_var_milliseconds = ctk.IntVar(value=10)
+        self.interval_var_milliseconds = ctk.StringVar(value="10")
         self.interval_label = ctk.CTkLabel(
             self.interval_frame,
             text="Milliseconds:",
             font=self.default_font,
         )
-        self.interval_label.pack(side="left", padx=5)
+        self.interval_label.grid(row=4, column=0, sticky="w", padx=5)
         self.interval_entry = ctk.CTkEntry(
             self.interval_frame,
             textvariable=self.interval_var_milliseconds,
             font=self.default_font,
         )
-        self.interval_entry.pack(side="left", padx=5)
+        self.interval_entry.grid(row=4, column=1, sticky="w", padx=5)
 
+        # Interval error label
+        self.interval_error_label = ctk.CTkLabel(
+            config_frame,
+            text="",
+            font=self.default_font,
+            text_color="red",
+        )
         self.interval_frame_visible = False
 
         # Control buttons
@@ -120,40 +127,72 @@ class HoldKeyUI:
     def toggle_script(self):
         """Toggles the Hold Key script."""
         if self.script is None or not self.script.is_running:
-            # Start the script
-            hold_key = self.hold_key_var.get()
-            toggle_key = self.toggle_key_var.get()
-            is_spam_key = self.is_spam_key_var.get()
-            interval_milliseconds = self.interval_var_milliseconds.get()
-            interval = interval_milliseconds / 1000.0  # Convert to seconds
-            self.script = HoldKeyScript(
-                hold_key=hold_key,
-                toggle_key=toggle_key,
-                is_spam_key=is_spam_key,
-                interval=interval,
-            )
-            logging.debug(
+            try:
+                if not self.validate_interval():
+                    raise ValueError("Interval value must be a positive integer.")
+
+                # Start the script
+                hold_key = self.hold_key_var.get()
+                toggle_key = self.toggle_key_var.get()
+                is_spam_key = self.is_spam_key_var.get()
+                interval_milliseconds = int(self.interval_var_milliseconds.get())
+                interval = interval_milliseconds / 1000.0  # Convert to seconds
+                self.script = HoldKeyScript(
+                    hold_key=hold_key,
+                    toggle_key=toggle_key,
+                    is_spam_key=is_spam_key,
+                    interval=interval,
+                )
+                logging.debug(
                 f"Starting Hold Key Script with hold_key='{hold_key}' and toggle_key='{toggle_key}' with is_spam_key={is_spam_key}"
-            )
-            self.script.start()
-
-            self.status_label.configure(text="Status: Running")
-            self.hold_key_combobox.configure(state="disabled")
-            self.toggle_key_combobox.configure(state="disabled")
-            self.spam_key_switch.configure(state="disabled")
-            self.toggle_script_button_text.set("Stop")
+                )
+                self.script.start()
+                self.status_label.configure(text="Status: Running")
+                self.hold_key_combobox.configure(state="disabled")
+                self.toggle_key_combobox.configure(state="disabled")
+                self.spam_key_switch.configure(state="disabled")
+                self.toggle_script_button_text.set("Stop")
+            except Exception as e:
+                logging.error(f"Failed to start Hold Key Script: {e}")
+        
         else:
-            # Stop the script
-            self.script.stop()
+            try:
+                # Stop the script
+                self.script.stop()
 
-            self.hold_key_combobox.configure(state="normal")
-            self.toggle_key_combobox.configure(state="normal")
-            self.spam_key_switch.configure(state="normal")
-            self.script = None
-            logging.debug("Stopped Hold Key Script.")
+                self.hold_key_combobox.configure(state="normal")
+                self.toggle_key_combobox.configure(state="normal")
+                self.spam_key_switch.configure(state="normal")
+                self.script = None
+                logging.debug("Stopped Hold Key Script.")
 
-            self.status_label.configure(text="Status: Stopped")
-            self.toggle_script_button_text.set("Start")
+                self.status_label.configure(text="Status: Stopped")
+                self.toggle_script_button_text.set("Start")
+            except Exception as e:
+                logging.error(f"Failed to stop Hold Key Script: {e}")
+
+    def validate_interval(self):
+        """Validates that the interval input is a positive integer."""
+        try:
+            value = int(self.interval_var_milliseconds.get())
+            logging.debug(f"Validating interval value: {value}")
+
+            if value <= 0:
+                raise ValueError("Interval must be a positive integer.")
+            
+            logging.debug(f"Validated interval: {value} milliseconds.")
+            self.interval_error_label.grid_forget()
+            return True
+        except (ValueError, TypeError):
+            logging.error("Interval value must be a positive integer.")
+            self.interval_error_label.configure(
+                text="Error: Interval must be a positive integer."
+            )
+            self.interval_error_label.grid(row=5, column=0, columnspan=2, sticky="w", padx=5, pady=2)
+            return False
+        except Exception as e:
+            logging.error(f"Unexpected error during interval validation: {e}")
+            return False
 
     def toggle_interval_ui(self):
         """Toggles the visibility of the interval settings UI."""
