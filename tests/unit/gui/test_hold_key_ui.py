@@ -4,16 +4,14 @@ Tests for hold_key_ui.py
 import pytest
 from unittest.mock import Mock, patch
 from src.gui.hold_key_ui import HoldKeyUI
-from src.scripts.hold_key_script import HoldKeyScript
 
 @pytest.fixture
 def setup_hold_key_ui():
     """Fixture to set up HoldKeyUI instance for tests."""
     mock_parent_frame = Mock()
     ui = HoldKeyUI(mock_parent_frame)
-    script = HoldKeyScript()
 
-    ui.interval_var_milliseconds.get.return_value = script.interval * 1000
+    ui.interval_var_milliseconds.get.return_value = "10"
     yield ui
     ui.cleanup()
 
