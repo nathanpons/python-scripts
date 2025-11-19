@@ -20,7 +20,7 @@ def lambda_handler(event, context):
             'statusCode': 500,
             'body': json.dumps({'error': 'API key not configured'})
         }
-    url = f'http://api.openweathermap.org/data/2.5/weather?q={location}&appid={api_key}&units=metric'
+    url = f'https://api.openweathermap.org/data/2.5/weather?q={location}&appid={api_key}&units=metric'
 
     try:
         response = http.request('GET', url)
