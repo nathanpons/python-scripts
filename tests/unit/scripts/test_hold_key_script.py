@@ -1,15 +1,20 @@
 """
 Tests for hold_key_script.py
 """
+import sys
 import pytest
-from unittest.mock import Mock, patch, call
 from src.scripts.hold_key_script import HoldKeyScript, MOUSE_KEYS
 
-class TestHoldKeyScriptInitialization:
-    def test_default_initialization(self):
-        """Test that HoldKeyScript initializes with default parameters."""
-        script = HoldKeyScript()
+@pytest.fixture
+def script():
+    """Fixture to set up HoldKeyScript instance for tests."""
+    script = HoldKeyScript()
+    yield script
 
+class TestHoldKeyScriptInitialization:
+    """Test initialization of HoldKeyScript."""
+    def test_default_initialization(self, script):
+        """Test that HoldKeyScript initializes with default parameters."""
         assert script.hold_key == "w"
         assert script.toggle_key == "f6"
         assert script.interval == 0.01
@@ -47,10 +52,8 @@ class TestHoldKeyScriptInitialization:
         assert script3.is_mouse_key is False
 
 class TestHoldKeyScriptToggle:
-    def test_toggle_hold_key(self):
+    def test_toggle_hold_key(self, script):
         """Test toggling the hold state of the script."""
-        script = HoldKeyScript()
-
         assert script.toggle is False
 
         script.toggle_hold()
@@ -59,11 +62,8 @@ class TestHoldKeyScriptToggle:
         script.toggle_hold()
         assert script.toggle is False
 
-    def test_multiple_toggles(self):
+    def test_multiple_toggles(self, script):
         """Test multiple toggles of the hold state."""
-        script = HoldKeyScript()
-        assert script.toggle is False
-
         for i in range(5):
             expected = (i % 2 == 0)
             script.toggle_hold()
@@ -81,12 +81,24 @@ class TestMouseKeys:
         """Test that MOUSE_KEYS contains exactly three entries."""
         assert len(MOUSE_KEYS) == 3
 
+    @pytest.mark.parametrize("hold_key,is_mouse", [
+        ("w", False),
+        ("a", False),
+        ("space", False),
+        ("left mouse", True),
+        ("right mouse", True),
+        ("middle mouse", True),
+    ])
+    def test_key_type_detection(self, hold_key, is_mouse):
+        """Test that various keys are correctly identified"""
+        script = HoldKeyScript(hold_key=hold_key)
+        assert script.is_mouse_key == is_mouse
+
 class TestHoldKeyScriptStartStop:
-    @patch("src.scripts.hold_key_script.keyboard")
-    @patch("src.scripts.hold_key_script.threading.Thread")
-    def test_start_script(self, mock_thread, mock_keyboard):
+    def test_start_script(self, script, mocker):
         """Test starting the HoldKeyScript."""
-        script = HoldKeyScript()
+        mock_keyboard = mocker.patch("src.scripts.hold_key_script.keyboard")
+        mock_thread = mocker.patch("src.scripts.hold_key_script.threading.Thread")
 
         assert not script.is_running
 
@@ -95,11 +107,10 @@ class TestHoldKeyScriptStartStop:
         assert mock_thread.called
         assert mock_keyboard.add_hotkey.called
 
-    @patch("src.scripts.hold_key_script.keyboard")
-    @patch("src.scripts.hold_key_script.threading.Thread")
-    def test_start_already_running(self, mock_thread, mock_keyboard):
+    def test_start_already_running(self, script, mocker):
         """Test starting the HoldKeyScript when it's already running."""
-        script = HoldKeyScript()
+        mock_keyboard = mocker.patch("src.scripts.hold_key_script.keyboard")
+        mock_thread = mocker.patch("src.scripts.hold_key_script.threading.Thread")
         script.is_running = True
 
         script.start()
@@ -107,46 +118,75 @@ class TestHoldKeyScriptStartStop:
         assert not mock_thread.called
         assert not mock_keyboard.add_hotkey.called
 
-    @patch("src.scripts.hold_key_script.keyboard")
-    @patch("src.scripts.hold_key_script.threading.Thread")
-    def test_stop_keyboard_script(self, mock_thread, mock_keyboard):
+    def test_stop_keyboard_script(self, script, mocker):
         """Test stopping the HoldKeyScript for keyboard key."""
-        script = HoldKeyScript(hold_key="a")
+        mock_keyboard = mocker.patch("src.scripts.hold_key_script.keyboard")
+
+        script.hold_key = "a"
         script.is_running = True
         script.toggle = True
-        script.hotkey_handler = Mock()
-        script.thread = Mock()
+        script.hotkey_handler = mocker.Mock()
+        script.thread = mocker.Mock()
 
         script.stop()
 
         assert script.is_running is False
         assert script.toggle is False
+        assert script.thread.join.called
+
         mock_keyboard.release.assert_called_with("a")
         mock_keyboard.release.assert_called_once()
 
-    @patch("src.scripts.hold_key_script.keyboard")
-    @patch("src.scripts.hold_key_script.pyautogui")
-    @patch("src.scripts.hold_key_script.threading.Thread")
-    def test_stop_mouse_script(self, mock_thread, mock_pyautogui, mock_keyboard):
+    def test_stop_mouse_script(self, mocker):
         """Test stopping the HoldKeyScript for mouse key."""
+        mock_pyautogui = mocker.patch("src.scripts.hold_key_script.pyautogui")
+        mock_keyboard = mocker.patch("src.scripts.hold_key_script.keyboard")
+
         script = HoldKeyScript(hold_key="left mouse")
+        script.hotkey_handler = mocker.Mock()
+        script.thread = mocker.Mock()
         script.is_running = True
         script.toggle = True
-        script.hotkey_handler = Mock()
-        script.thread = Mock()
 
         script.stop()
 
         assert script.is_running is False
         assert script.toggle is False
+        assert script.thread.join.called
+
         mock_pyautogui.mouseUp.assert_called_with(button="left")
         mock_keyboard.remove_hotkey.assert_called_once()
 
+    def test_full_start_stop_cycle(self, mocker):
+        """Test full start and stop cycle of the script."""
+        mock_keyboard = mocker.patch("src.scripts.hold_key_script.keyboard")
+        mock_thread = mocker.patch("src.scripts.hold_key_script.threading.Thread")
+
+        script = HoldKeyScript(hold_key="s", toggle_key="f8")
+
+        # Start
+        script.start()
+        assert script.is_running is True
+        assert script.toggle is False
+        assert mock_thread.called
+        assert mock_keyboard.add_hotkey.called
+
+        # Toggle
+        script.toggle_hold()
+        assert script.toggle is True
+
+        # Stop
+        script.stop()
+        assert script.is_running is False
+        assert script.toggle is False
+        mock_keyboard.release.assert_called_with("s")
+
 class TestHoldKeyLoopKeyboard():
-    @patch("src.scripts.hold_key_script.keyboard")
-    @patch("src.scripts.hold_key_script.time.sleep")
-    def test_hold_key_loop_hold(self, mock_sleep, mock_keyboard):
+    def test_hold_key_loop_hold(self, mocker):
         """Test that keyboard key is pressed and released."""
+        mock_keyboard = mocker.patch("src.scripts.hold_key_script.keyboard")
+        mock_sleep = mocker.patch("src.scripts.hold_key_script.time.sleep")
+
         script = HoldKeyScript(hold_key="a", is_spam_key=False)
         script.is_running = True
 
@@ -166,10 +206,11 @@ class TestHoldKeyLoopKeyboard():
         mock_keyboard.press.assert_called_with("a")
         mock_keyboard.release.assert_called_with("a")
 
-    @patch("src.scripts.hold_key_script.keyboard")
-    @patch("src.scripts.hold_key_script.time.sleep")
-    def test_hold_key_loop_spam(self, mock_sleep, mock_keyboard):
+    def test_hold_key_loop_spam(self, mocker):
         """Test that keyboard key is spammed."""
+        mock_keyboard = mocker.patch("src.scripts.hold_key_script.keyboard")
+        mock_sleep = mocker.patch("src.scripts.hold_key_script.time.sleep")
+
         script = HoldKeyScript(hold_key="a", is_spam_key=True)
         script.is_running = True
         script.toggle = True
@@ -189,10 +230,11 @@ class TestHoldKeyLoopKeyboard():
         assert mock_keyboard.press_and_release.call_count >= 3
 
 class TestHoldKeyLoopMouse():
-    @patch("src.scripts.hold_key_script.pyautogui")
-    @patch("src.scripts.hold_key_script.time.sleep")
-    def test_hold_key_loop_hold(self, mock_sleep, mock_pyautogui):
+    def test_hold_key_loop_hold(self, mocker):
         """Test that mouse button is pressed and released."""
+        mock_pyautogui = mocker.patch("src.scripts.hold_key_script.pyautogui")
+        mock_sleep = mocker.patch("src.scripts.hold_key_script.time.sleep")
+
         script = HoldKeyScript(hold_key="left mouse", is_spam_key=False)
         script.is_running = True
 
@@ -212,10 +254,11 @@ class TestHoldKeyLoopMouse():
         mock_pyautogui.mouseDown.assert_called_with(button="left")
         mock_pyautogui.mouseUp.assert_called_with(button="left")
 
-    @patch("src.scripts.hold_key_script.pyautogui")
-    @patch("src.scripts.hold_key_script.time.sleep")
-    def test_hold_key_loop_spam(self, mock_sleep, mock_pyautogui):
+    def test_hold_key_loop_spam(self, mocker):
         """Test that mouse button is spammed."""
+        mock_pyautogui = mocker.patch("src.scripts.hold_key_script.pyautogui")
+        mock_sleep = mocker.patch("src.scripts.hold_key_script.time.sleep")
+
         script = HoldKeyScript(hold_key="left mouse", is_spam_key=True)
         script.is_running = True
         script.toggle = True
@@ -236,93 +279,47 @@ class TestHoldKeyLoopMouse():
 class TestHoldKeyScriptEdgeCases:
     """Test edge cases and error handling"""
 
-    @patch("src.scripts.hold_key_script.keyboard")
-    def test_invalid_mouse_key(self, mock_keyboard):
+    def test_invalid_mouse_key(self):
         """Test handling of invalid mouse key."""
-        script = HoldKeyScript(hold_key="invalid mouse", is_spam_key=False)
+        script = HoldKeyScript(hold_key="invalid mouse")
 
         assert script.is_mouse_key is False
 
-    def test_interval_validation(self):
+    @pytest.mark.parametrize("interval,raises", [
+        (-100, True),
+        (-0.00000000001, True),
+        (0, True),
+        (sys.float_info.min, False),
+        (0.00000000001, False),
+        (100, False),
+        (sys.float_info.max, False),
+        ])
+    def test_interval_borders(self, interval, raises):
         """Test different interval values."""
-        script = HoldKeyScript(interval=0)
-        assert script.interval == 0
+        script = HoldKeyScript(interval=interval)
 
-        script = HoldKeyScript(interval=0.01)
-        assert script.interval == 0.01
+        assert script.interval == interval
+        if raises:
+            with pytest.raises(ValueError, match="Interval must be a positive number."):
+                script.start()
 
-        script = HoldKeyScript(interval=1)
-        assert script.interval == 1
-
-    def test_interval_is_positive(self):
-        """Test that interval is positive."""
-        script = HoldKeyScript(interval=-0.1)
-        
-        with pytest.raises(ValueError, match="Interval must be a positive number."):
-            script.start()
-
-    @patch("src.scripts.hold_key_script.keyboard")
-    @patch("src.scripts.hold_key_script.time.sleep")
-    def test_exception_in_loop(self, mock_sleep, mock_keyboard):
+    def test_exception_in_loop(self, script, mocker):
         """Test that exceptions in hold_key_loop are handled and logged."""
-        script = HoldKeyScript()
+        mock_keyboard = mocker.patch("src.scripts.hold_key_script.keyboard")
+        mock_sleep = mocker.patch("src.scripts.hold_key_script.time.sleep")
+        mock_logging = mocker.patch("src.scripts.hold_key_script.logging")
         script.is_running = True
+        script.toggle = True
 
         mock_keyboard.press.side_effect = Exception("Test Exception")
 
         def side_effect(*args):
-            script.toggle = True
             script.is_running = False
 
         mock_sleep.side_effect = side_effect
 
         script.hold_key_loop()
 
-class TestHoldKeyScriptIntegration:
-    """Integration tests for HoldKeyScript"""
-
-    @patch("src.scripts.hold_key_script.keyboard")
-    @patch("src.scripts.hold_key_script.threading.Thread")
-    def test_full_start_stop_cycle(self, mock_thread, mock_keyboard):
-        """Test full start and stop cycle of the script."""
-        script = HoldKeyScript(hold_key="s", toggle_key="f8")
-
-        # Start
-        script.start()
-        assert script.is_running is True
-        assert script.toggle is False
-        assert mock_thread.called
-        assert mock_keyboard.add_hotkey.called
-
-        # Toggle
-        script.toggle_hold()
-        assert script.toggle is True
-
-        # Stop
-        script.stop()
-        assert script.is_running is False
-        assert script.toggle is False
-        mock_keyboard.release.assert_called_with("s")
-
-class TestParameterizedScenarios:
-    """Test multiple scenarios with parametrize"""
-    
-    @pytest.mark.parametrize("hold_key,is_mouse", [
-        ("w", False),
-        ("a", False),
-        ("space", False),
-        ("left mouse", True),
-        ("right mouse", True),
-        ("middle mouse", True),
-    ])
-    def test_key_type_detection(self, hold_key, is_mouse):
-        """Test that various keys are correctly identified"""
-        script = HoldKeyScript(hold_key=hold_key)
-        assert script.is_mouse_key == is_mouse
-    
-    @pytest.mark.parametrize("interval", [0.001, 0.01, 0.1, 1.0])
-    def test_various_intervals(self, interval):
-        """Test script with various intervals"""
-        script = HoldKeyScript(interval=interval)
-        assert script.interval == interval
+        mock_logging.error.assert_called_once()
+        assert "Test Exception" in str(mock_logging.error.call_args)
 
