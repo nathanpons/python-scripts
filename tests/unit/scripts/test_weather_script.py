@@ -169,7 +169,7 @@ class TestWeatherScript:
             result = weather_script.get_icon_path(icon_code)
             
             assert result == expected_icon_path
-            mocks["get"].assert_called_once_with(f"http://openweathermap.org/img/wn/{icon_code}@2x.png")
+            mocks["get"].assert_called_once_with(f"https://openweathermap.org/img/wn/{icon_code}@2x.png")
             mocks["open"].assert_called_once_with(expected_icon_path, "wb")
             mocks["open"]().write.assert_called_once_with(b"fake_icon_data")
             mocks["makedirs"].assert_not_called()
