@@ -76,7 +76,7 @@ class WeatherScript:
             return {"error": "Exception occurred while fetching data"}
 
     def get_icon_path(self, icon_code):
-        weather_dir = get_resource_path("assets/weather")
+        weather_dir = get_resource_path(os.path.join("assets", "weather"))
         if not os.path.exists(weather_dir):
             os.makedirs(weather_dir)
             logging.debug(f"Weather directory created at path: {weather_dir}")
@@ -88,7 +88,7 @@ class WeatherScript:
             return icon_path
         else:
             response = requests.get(
-                f"http://openweathermap.org/img/wn/{icon_code}@2x.png"
+                f"https://openweathermap.org/img/wn/{icon_code}@2x.png"
             )
             if response.status_code == 200:
                 with open(icon_path, "wb") as icon_file:
