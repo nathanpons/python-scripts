@@ -1,4 +1,5 @@
 import json
+import re
 import requests
 import logging
 import os
@@ -76,6 +77,10 @@ class WeatherScript:
             return {"error": "Exception occurred while fetching data"}
 
     def get_icon_path(self, icon_code):
+        if not re.match(r'^[0-9]{2}[dn]$', icon_code):
+            logging.error(f"Invalid icon code format: {icon_code}")
+            return None
+
         weather_dir = get_resource_path(os.path.join("assets", "weather"))
         if not os.path.exists(weather_dir):
             os.makedirs(weather_dir)
@@ -87,14 +92,20 @@ class WeatherScript:
             logging.debug(f"Icon already exists at path: {icon_path}")
             return icon_path
         else:
-            response = requests.get(
-                f"https://openweathermap.org/img/wn/{icon_code}@2x.png"
-            )
-            if response.status_code == 200:
-                with open(icon_path, "wb") as icon_file:
-                    icon_file.write(response.content)
-                logging.debug(f"Icon downloaded and saved at path: {icon_path}")
-                return icon_path
-            else:
-                logging.error(f"Error fetching icon: {response.status_code}")
+            try:
+                response = requests.get(
+                    f"https://openweathermap.org/img/wn/{icon_code}@2x.png"
+                )
+                if response.status_code == 200 and len(response.content) < 100000:
+                    sanitized_code = re.sub(r'[^\w-]', '', icon_code)
+                    safe_icon_path = os.path.join(weather_dir, f"weather_icon_{sanitized_code}.png")
+                    with open(safe_icon_path, "wb") as icon_file:
+                        icon_file.write(response.content)
+                    logging.debug(f"Icon downloaded and saved at path: {safe_icon_path}")
+                    return safe_icon_path
+                else:
+                    logging.error(f"Error fetching icon: {response.status_code}")
+                    return None
+            except Exception as e:
+                logging.error(f"Exception during icon download: {e}")
                 return None
