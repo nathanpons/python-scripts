@@ -200,11 +200,21 @@ class TestWeatherScript:
             mocks["exists"].side_effect = lambda path: path == mocks["weather_dir"]
             mocks["get"].side_effect = requests.exceptions.RequestException("Network error")
 
-            with pytest.raises(requests.exceptions.RequestException):
-                weather_script.get_icon_path(icon_code)
+            result = weather_script.get_icon_path(icon_code)
+            assert result is None
 
-        @pytest.mark.parametrize("icon_code", ["01d", "01n", "02d", "10n", "500d", "-6n", "abc"])
-        def test_get_icon_path_icon_codes(self, weather_script, icon_path_mocks, mocker, icon_code):
+        @pytest.mark.parametrize("icon_code,is_valid", [
+            ("01d", True),
+            ("01n", True),
+            ("02d", True),
+            ("10n", True),
+            ("10x", False),
+            ("500d", False),
+            ("-6n", False),
+            ("abc", False),
+            ("", False),
+        ])
+        def test_get_icon_path_icon_codes(self, weather_script, icon_path_mocks, mocker, icon_code, is_valid):
             """Test get_icon_path with various icon codes."""
             mocks = icon_path_mocks
             expected_icon_path = os.path.join(mocks["weather_dir"], f"weather_icon_{icon_code}.png")
@@ -214,7 +224,10 @@ class TestWeatherScript:
 
             result = weather_script.get_icon_path(icon_code)
 
-            assert result == expected_icon_path
+            if is_valid:
+                assert result == expected_icon_path
+            else:
+                assert result is None
             mocks["get"].assert_not_called()
 
         def test_get_icon_path_file_write_permission_error(self, weather_script, icon_path_mocks, mocker):
@@ -222,12 +235,14 @@ class TestWeatherScript:
             icon_code = "02d"
             mocks = icon_path_mocks
 
-            mocks["exists"].side_effect = lambda path: path == mocks["weather_dir"]
+            mocks["exists"].return_value = False
             mock_response = mocker.Mock()
             mock_response.status_code = 200
             mock_response.content = b"fake_icon_data"
             mocks["get"].return_value = mock_response
             mocks["open"].side_effect = PermissionError("No permission to write file")
 
-            with pytest.raises(PermissionError):
-                weather_script.get_icon_path(icon_code)
+            result = weather_script.get_icon_path(icon_code)
+            assert result is None
+
+        # TODO: Test get_icon_path security 
