@@ -28,7 +28,9 @@ class HoldKeyUI:
         """Sets up the UI components for the Hold Key script."""
         # Title
         self.title_label = ctk.CTkLabel(
-            self.parent_frame, text="Hold Key Script", font=self.title_font
+            self.parent_frame,
+            text="Hold Key Script",
+            font=self.title_font,
         )
         self.title_label.pack(pady=10)
 
@@ -38,31 +40,35 @@ class HoldKeyUI:
 
         # Hold Key selection
         self.hold_key_label = ctk.CTkLabel(
-            config_frame, text="Select Key to Hold:", font=self.default_font
+            config_frame,
+            text="Select Key to Hold:",
+            font=self.default_font,
         )
         self.hold_key_label.grid(row=0, column=0, sticky="w", padx=5, pady=2)
         self.hold_key_var = ctk.StringVar(value=self.hold_keys[0])
-        self.hold_key_combobox = ctk.CTkOptionMenu(
+        self.hold_key_optionmenu = ctk.CTkOptionMenu(
             config_frame,
             variable=self.hold_key_var,
             values=self.hold_keys,
             font=self.default_font,
         )
-        self.hold_key_combobox.grid(row=0, column=1, padx=5, pady=2)
+        self.hold_key_optionmenu.grid(row=0, column=1, padx=5, pady=2)
 
         # Toggle Key selection
         self.toggle_key_label = ctk.CTkLabel(
-            config_frame, text="Select Toggle Key:", font=self.default_font
+            config_frame,
+            text="Select Toggle Key:",
+            font=self.default_font,
         )
         self.toggle_key_label.grid(row=1, column=0, sticky="w", padx=5, pady=2)
         self.toggle_key_var = ctk.StringVar(value=self.toggle_keys[0])
-        self.toggle_key_combobox = ctk.CTkOptionMenu(
+        self.toggle_key_optionmenu = ctk.CTkOptionMenu(
             config_frame,
             variable=self.toggle_key_var,
             values=self.toggle_keys,
             font=self.default_font,
         )
-        self.toggle_key_combobox.grid(row=1, column=1, padx=5, pady=2)
+        self.toggle_key_optionmenu.grid(row=1, column=1, padx=5, pady=2)
 
         # Spam Key Switch
         self.is_spam_key_var = ctk.BooleanVar(value=False)
@@ -78,7 +84,9 @@ class HoldKeyUI:
         # Interval settings
         self.interval_frame = ctk.CTkFrame(config_frame)
         self.interval_frame_label = ctk.CTkLabel(
-            self.interval_frame, text="Interval:", font=self.default_font
+            self.interval_frame,
+            text="Interval:",
+            font=self.default_font,
         )
         self.interval_frame_label.grid(row=3, column=0, sticky="w", padx=5)
 
@@ -120,7 +128,9 @@ class HoldKeyUI:
 
         # Status label
         self.status_label = ctk.CTkLabel(
-            self.parent_frame, text="Status: Stopped", font=self.default_font
+            self.parent_frame,
+            text="Status: Stopped",
+            font=self.default_font,
         )
         self.status_label.pack(pady=10)
 
@@ -144,24 +154,24 @@ class HoldKeyUI:
                     interval=interval,
                 )
                 logging.debug(
-                f"Starting Hold Key Script with hold_key='{hold_key}' and toggle_key='{toggle_key}' with is_spam_key={is_spam_key}"
+                    f"Starting Hold Key Script with hold_key='{hold_key}' and toggle_key='{toggle_key}' with is_spam_key={is_spam_key}"
                 )
                 self.script.start()
                 self.status_label.configure(text="Status: Running")
-                self.hold_key_combobox.configure(state="disabled")
-                self.toggle_key_combobox.configure(state="disabled")
+                self.hold_key_optionmenu.configure(state="disabled")
+                self.toggle_key_optionmenu.configure(state="disabled")
                 self.spam_key_switch.configure(state="disabled")
                 self.toggle_script_button_text.set("Stop")
             except Exception as e:
                 logging.error(f"Failed to start Hold Key Script: {e}")
-        
+
         else:
             try:
                 # Stop the script
                 self.script.stop()
 
-                self.hold_key_combobox.configure(state="normal")
-                self.toggle_key_combobox.configure(state="normal")
+                self.hold_key_optionmenu.configure(state="normal")
+                self.toggle_key_optionmenu.configure(state="normal")
                 self.spam_key_switch.configure(state="normal")
                 self.script = None
                 logging.debug("Stopped Hold Key Script.")
@@ -179,7 +189,7 @@ class HoldKeyUI:
 
             if value <= 0:
                 raise ValueError("Interval must be a positive integer.")
-            
+
             logging.debug(f"Validated interval: {value} milliseconds.")
             self.interval_error_label.grid_forget()
             return True
@@ -188,7 +198,9 @@ class HoldKeyUI:
             self.interval_error_label.configure(
                 text="Error: Interval must be a positive integer."
             )
-            self.interval_error_label.grid(row=5, column=0, columnspan=2, sticky="w", padx=5, pady=2)
+            self.interval_error_label.grid(
+                row=5, column=0, columnspan=2, sticky="w", padx=5, pady=2
+            )
             return False
         except Exception as e:
             logging.error(f"Unexpected error during interval validation: {e}")
