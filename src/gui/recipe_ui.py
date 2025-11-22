@@ -123,10 +123,12 @@ class RecipeUI:
         """Fetches recipes based on user input and updates the UI."""
         ingredients = self.ingredients_entry_var.get()
         num_of_recipes = self.num_of_recipes_entry_var.get()
-        should_proceed = True
 
-        if not ingredients or not ingredients.strip():
-            self.ingredients_error_label.configure(text="Please enter at least one ingredient.")
+        # Input Validation
+        should_proceed = True
+        ingredients_validation = self.validate_ingredients(ingredients)
+        if "error" in ingredients_validation:
+            self.ingredients_error_label.configure(text=ingredients_validation["error"])
             self.ingredients_error_label.pack(padx=10, pady=5)
             logging.error("No ingredients provided by user.")
             should_proceed = False
@@ -141,6 +143,7 @@ class RecipeUI:
         if not should_proceed:
             return
         
+        # After validation, fetch and display recipes
         try:
             self.ingredients_error_label.pack_forget()
             self.num_of_recipes_error_label.pack_forget()
@@ -247,4 +250,10 @@ class RecipeUI:
         if num > 20:
             return {"error": "Number of recipes must not exceed 20."}
         
+        return {"valid": ""}
+    
+    def validate_ingredients(self, value):
+        """Validates the ingredients input."""
+        if not value or not value.strip():
+            return {"error": "Ingredients cannot be empty."}
         return {"valid": ""}
