@@ -61,6 +61,14 @@ class RecipeUI:
         )
         self.ingredients_entry.pack(padx=10, pady=5)
 
+        self.ingredients_error_label = ctk.CTkLabel(
+            self.ingredients_frame,
+            text="",
+            font=self.default_font,
+            text_color="red",
+        )
+        self.ingredients_error_label.pack_forget()
+
         self.num_of_ingredients_label = ctk.CTkLabel(
             self.ingredients_frame,
             text="Number of Recipes to Fetch:",
@@ -76,6 +84,14 @@ class RecipeUI:
             font=self.default_font,
         )
         self.num_of_ingredients_entry.pack(padx=10, pady=5)
+
+        self.num_of_ingredients_error_label = ctk.CTkLabel(
+            self.ingredients_frame,
+            text="",
+            font=self.default_font,
+            text_color="red",
+        )
+        self.num_of_ingredients_error_label.pack_forget()
 
         self.get_recipe_button = ctk.CTkButton(
             self.ingredients_frame,
@@ -107,16 +123,39 @@ class RecipeUI:
         """Fetches recipes based on user input and updates the UI."""
         ingredients = self.ingredients_entry_var.get()
         num_of_recipes = self.num_of_ingredients_entry_var.get()
-        recipes = self.script.get_recipes(ingredients, number=num_of_recipes)
-        logging.debug(f"Fetched recipes: {recipes}")
+        should_proceed = True
 
-        if recipes:
-            self.display_recipes(recipes)
-            recipe_names = [recipe["title"] for recipe in recipes]
-            logging.info(f"Displayed recipes: {recipe_names}")
-        else:
-            self.recipe_info_label.configure(text="No recipes found.")
-            logging.info("No recipes found to display.")
+        if not ingredients or not ingredients.strip():
+            self.ingredients_error_label.configure(text="Please enter at least one ingredient.")
+            self.ingredients_error_label.pack(padx=10, pady=5)
+            logging.error("No ingredients provided by user.")
+            should_proceed = False
+        
+        if not num_of_recipes or not num_of_recipes.strip() or not num_of_recipes.isdigit() or int(num_of_recipes) <= 0:
+            self.num_of_ingredients_error_label.configure(text="Please enter a valid number of recipes.")
+            self.num_of_ingredients_error_label.pack(padx=10, pady=5)
+            logging.error("Invalid number of recipes provided by user.")
+            should_proceed = False
+
+        if not should_proceed:
+            return
+        
+        try:
+            self.ingredients_error_label.pack_forget()
+            self.num_of_ingredients_error_label.pack_forget()
+            recipes = self.script.get_recipes(ingredients, number=num_of_recipes)
+            logging.debug(f"Fetched recipes: {recipes}")
+
+            if recipes:
+                self.display_recipes(recipes)
+                recipe_names = [recipe["title"] for recipe in recipes]
+                logging.info(f"Displayed recipes: {recipe_names}")
+            else:
+                self.recipe_info_label.configure(text="No recipes found.")
+                logging.info("No recipes found to display.")
+        except Exception as e:
+            self.recipe_info_label.configure(text=f"Error fetching recipes: {e}")
+            logging.error(f"Exception occurred while fetching recipes: {e}")
 
     def display_recipes(self, recipes):
         """Updates the UI with the fetched recipes."""
