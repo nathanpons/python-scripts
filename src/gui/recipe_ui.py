@@ -69,29 +69,29 @@ class RecipeUI:
         )
         self.ingredients_error_label.pack_forget()
 
-        self.num_of_ingredients_label = ctk.CTkLabel(
+        self.num_of_recipes_label = ctk.CTkLabel(
             self.ingredients_frame,
             text="Number of Recipes to Fetch:",
             font=self.default_font,
         )
-        self.num_of_ingredients_label.pack(padx=10, pady=5)
+        self.num_of_recipes_label.pack(padx=10, pady=5)
 
-        self.num_of_ingredients_entry_var = ctk.StringVar()
-        self.num_of_ingredients_entry = ctk.CTkEntry(
+        self.num_of_recipes_entry_var = ctk.StringVar()
+        self.num_of_recipes_entry = ctk.CTkEntry(
             self.ingredients_frame,
             width=200,
-            textvariable=self.num_of_ingredients_entry_var,
+            textvariable=self.num_of_recipes_entry_var,
             font=self.default_font,
         )
-        self.num_of_ingredients_entry.pack(padx=10, pady=5)
+        self.num_of_recipes_entry.pack(padx=10, pady=5)
 
-        self.num_of_ingredients_error_label = ctk.CTkLabel(
+        self.num_of_recipes_error_label = ctk.CTkLabel(
             self.ingredients_frame,
             text="",
             font=self.default_font,
             text_color="red",
         )
-        self.num_of_ingredients_error_label.pack_forget()
+        self.num_of_recipes_error_label.pack_forget()
 
         self.get_recipe_button = ctk.CTkButton(
             self.ingredients_frame,
@@ -122,7 +122,7 @@ class RecipeUI:
     def get_and_display_recipes(self):
         """Fetches recipes based on user input and updates the UI."""
         ingredients = self.ingredients_entry_var.get()
-        num_of_recipes = self.num_of_ingredients_entry_var.get()
+        num_of_recipes = self.num_of_recipes_entry_var.get()
         should_proceed = True
 
         if not ingredients or not ingredients.strip():
@@ -132,8 +132,8 @@ class RecipeUI:
             should_proceed = False
         
         if not num_of_recipes or not num_of_recipes.strip() or not num_of_recipes.isdigit() or int(num_of_recipes) <= 0:
-            self.num_of_ingredients_error_label.configure(text="Please enter a valid number of recipes.")
-            self.num_of_ingredients_error_label.pack(padx=10, pady=5)
+            self.num_of_recipes_error_label.configure(text="Please enter a valid number of recipes.")
+            self.num_of_recipes_error_label.pack(padx=10, pady=5)
             logging.error("Invalid number of recipes provided by user.")
             should_proceed = False
 
@@ -142,7 +142,7 @@ class RecipeUI:
         
         try:
             self.ingredients_error_label.pack_forget()
-            self.num_of_ingredients_error_label.pack_forget()
+            self.num_of_recipes_error_label.pack_forget()
             recipes = self.script.get_recipes(ingredients, number=num_of_recipes)
             logging.debug(f"Fetched recipes: {recipes}")
 
