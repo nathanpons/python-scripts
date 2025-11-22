@@ -115,9 +115,16 @@ class WeatherUI:
             self.weather_info_label.configure(text=weather_info)
 
         # Update weather icon
-        if weather_data.get("icon_path"):
-            image = Image.open(weather_data["icon_path"])
-            weather_icon_image = ctk.CTkImage(image, size=(100, 100))
-            self.weather_icon.configure(image=weather_icon_image)
-        else:
+        try:
+            if weather_data.get("icon_path"):
+                image = Image.open(weather_data["icon_path"])
+                weather_icon_image = ctk.CTkImage(image, size=(100, 100))
+                self.weather_icon.configure(image=weather_icon_image)
+            else:
+                self.weather_icon.configure(image=None)
+        except FileNotFoundError as e:
+            logging.error(f"Weather icon file not found: {e}")
+            self.weather_icon.configure(image=None)
+        except Exception as e:
+            logging.error(f"Error loading weather icon: {e}")
             self.weather_icon.configure(image=None)
