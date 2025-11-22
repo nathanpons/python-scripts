@@ -54,18 +54,12 @@ class TestRecipeUI:
         def test_get_and_display_recipes_success(self, recipe_ui, mocker):
             """Test that get_and_display_recipes calls the script and updates the UI."""
             # Mocks
-            mock_ingredients = mocker.patch.object(
-                recipe_ui.ingredients_entry,
-                "get",
-                return_value="tomato, cheese",
-            )
-            mock_num_of_ingredients = mocker.patch.object(
-                recipe_ui.num_of_ingredients_entry, "get", return_value="3"
-            )
-            # Debug: Verify mocks are working
-            print(f"ingredients_entry.get() returns: {recipe_ui.ingredients_entry.get()}")
-            print(f"num_of_ingredients_entry.get() returns: {recipe_ui.num_of_ingredients_entry.get()}")
-    
+            recipe_ui.ingredients_entry_var = mocker.MagicMock()
+            recipe_ui.num_of_ingredients_entry_var = mocker.MagicMock()
+
+            recipe_ui.ingredients_entry_var.get.return_value = "tomato, cheese"
+            recipe_ui.num_of_ingredients_entry_var.get.return_value = '3'
+
             fake_recipes = [
                 {"title": "Tomato Soup", "ingredients": "tomato, water, salt"},
                 {"title": "Cheese Sandwich", "ingredients": "bread, cheese, butter"},
@@ -81,9 +75,9 @@ class TestRecipeUI:
 
             # Call method
             recipe_ui.get_and_display_recipes()
-            
-            print(f"get_recipes called with: {mock_get_recipes.call_args}")
 
             # Asserts
-            mock_get_recipes.assert_called_once_with("tomato, cheese", '3')
+            mock_get_recipes.assert_called_once_with("tomato, cheese", number='3')
             mock_update_ui.assert_called_once_with(fake_recipes)
+
+        
