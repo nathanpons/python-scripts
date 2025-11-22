@@ -3,6 +3,7 @@ Tests for recipe_ui.py
 """
 
 import pytest
+import sys
 from src.gui.recipe_ui import RecipeUI
 
 
@@ -87,8 +88,8 @@ class TestRecipeUI:
             recipe_ui.num_of_recipes_error_label.pack_forget.assert_called_once()
 
         @pytest.mark.parametrize("entry_value", ["", "   ", None])
-        def test_get_and_display_recipes_empty_entries(self, recipe_ui, mocker, entry_value):
-            """Test that get_and_display_recipes handles empty entries."""
+        def test_get_and_display_recipes_empty_ingredients_entry(self, recipe_ui, mocker, entry_value):
+            """Test that get_and_display_recipes handles empty ingredients entry."""
             # Mocks
             recipe_ui.ingredients_entry_var = mocker.MagicMock()
             recipe_ui.ingredients_error_label = mocker.MagicMock()
@@ -96,7 +97,6 @@ class TestRecipeUI:
             recipe_ui.num_of_recipes_error_label = mocker.MagicMock()
 
             recipe_ui.ingredients_entry_var.get.return_value = entry_value
-            recipe_ui.num_of_recipes_entry_var.get.return_value = entry_value
             
             mock_get_recipes = mocker.patch.object(
                 recipe_ui.script, 
@@ -111,14 +111,115 @@ class TestRecipeUI:
             recipe_ui.get_and_display_recipes()
 
             # Asserts
-            recipe_ui.ingredients_error_label.configure.assert_called_once_with(text="Please enter at least one ingredient.")
+            recipe_ui.ingredients_error_label.configure.assert_called_once_with(text="Ingredients cannot be empty.")
             recipe_ui.ingredients_error_label.pack.assert_called_once_with(padx=10, pady=5)
-            recipe_ui.num_of_recipes_error_label.configure.assert_called_once_with(text="Please enter a valid number of recipes.")
-            recipe_ui.num_of_recipes_error_label.pack.assert_called_once_with(padx=10, pady=5)
 
             mock_get_recipes.assert_not_called()
             mock_update_ui.assert_not_called()
         
-        @pytest.mark.parametrize("entry_value", ["", "   ", "abc", "-5", "0"])
-        def test_get_and_display_recipes_invalid_numbers(self, recipe_ui, mocker, entry_value):
-            pass
+        @pytest.mark.parametrize("entry_value,is_valid", [
+            ("", False),
+            ("   ", False),
+            (None, False),
+            ("abc", False), 
+            ("-5", False), 
+            ("0", False),
+            (sys.float_info.min, False),
+            ("0.1", False),
+            ("1", True),
+            ("20", True),
+            ("21", False),
+            ("1.5e6", False),
+            (sys.maxsize, False),
+            (sys.float_info.max, False),
+        ])
+        def test_get_and_display_recipes_num_of_recipes_entry(self, recipe_ui, mocker, entry_value, is_valid):
+            """Test that get_and_display_recipes handles invalid entries within the num_of_recipes entry."""
+            # Mocks
+            recipe_ui.ingredients_entry_var = mocker.MagicMock()
+            recipe_ui.num_of_recipes_entry_var = mocker.MagicMock()
+            recipe_ui.ingredients_error_label = mocker.MagicMock()
+            recipe_ui.num_of_recipes_error_label = mocker.MagicMock()
+
+            recipe_ui.ingredients_entry_var.get.return_value = "tomato"
+            recipe_ui.num_of_recipes_entry_var.get.return_value = str(entry_value)
+
+            mock_get_recipes = mocker.patch.object(
+                recipe_ui.script,
+                "get_recipes",
+                return_value=[{"title": "Tomato Soup", "ingredients": "tomato, water, salt"}],
+            )
+            mock_update_ui = mocker.patch.object(
+                recipe_ui, "display_recipes"
+            )
+
+            # Call method
+            recipe_ui.get_and_display_recipes()
+    
+            if not is_valid:
+                recipe_ui.num_of_recipes_error_label.configure.assert_called_once()
+                recipe_ui.num_of_recipes_error_label.pack.assert_called_once()
+
+                mock_get_recipes.assert_not_called()
+                mock_update_ui.assert_not_called()
+            else:
+                mock_get_recipes.assert_called_once_with("tomato", number=str(entry_value))
+                mock_update_ui.assert_called_once()
+
+        def test_get_and_display_recipes_return_empty(self, recipe_ui, mocker):
+            """Test that get_and_display_recipes handles empty return from script."""
+            # Mocks
+            recipe_ui.ingredients_entry_var = mocker.MagicMock()
+            recipe_ui.num_of_recipes_entry_var = mocker.MagicMock()
+            recipe_ui.recipe_info_label = mocker.MagicMock()
+
+            recipe_ui.ingredients_entry_var.get.return_value = "tomato, cheese"
+            recipe_ui.num_of_recipes_entry_var.get.return_value = '2'
+
+            mock_get_recipes = mocker.patch.object(
+                recipe_ui.script,
+                "get_recipes",
+                return_value=[],
+            )
+            mock_update_ui = mocker.patch.object(
+                recipe_ui, "display_recipes"
+            )
+
+            # Call method
+            recipe_ui.get_and_display_recipes()
+
+            # Asserts
+            mock_get_recipes.assert_called_once_with("tomato, cheese", number='2')
+            mock_update_ui.assert_not_called()
+            recipe_ui.recipe_info_label.configure.assert_called_once_with(text="No recipes found.")
+
+        def test_get_and_display_recipes_exception(self, recipe_ui, mocker):
+            """Test that get_and_display_recipes handles exceptions from the script."""
+            # Mocks
+            recipe_ui.ingredients_entry_var = mocker.MagicMock()
+            recipe_ui.num_of_recipes_entry_var = mocker.MagicMock()
+            recipe_ui.recipe_info_label = mocker.MagicMock()
+
+            recipe_ui.ingredients_entry_var.get.return_value = "tomato, cheese"
+            recipe_ui.num_of_recipes_entry_var.get.return_value = '2'
+
+            mock_get_recipes = mocker.patch.object(
+                recipe_ui.script,
+                "get_recipes",
+                side_effect=Exception("API Error"),
+            )
+            mock_update_ui = mocker.patch.object(
+                recipe_ui, "display_recipes"
+            )
+
+            # Call method
+            recipe_ui.get_and_display_recipes()
+
+            # Asserts
+            mock_get_recipes.assert_called_once_with("tomato, cheese", number='2')
+            mock_update_ui.assert_not_called()
+            recipe_ui.recipe_info_label.configure.assert_called_once_with(text="An error occurred while fetching recipes. Please try again later.")
+
+
+
+
