@@ -56,6 +56,8 @@ class TestRecipeUI:
             # Mocks
             recipe_ui.ingredients_entry_var = mocker.MagicMock()
             recipe_ui.num_of_ingredients_entry_var = mocker.MagicMock()
+            recipe_ui.ingredients_error_label = mocker.MagicMock()
+            recipe_ui.num_of_ingredients_error_label = mocker.MagicMock()
 
             recipe_ui.ingredients_entry_var.get.return_value = "tomato, cheese"
             recipe_ui.num_of_ingredients_entry_var.get.return_value = '3'
@@ -79,5 +81,39 @@ class TestRecipeUI:
             # Asserts
             mock_get_recipes.assert_called_once_with("tomato, cheese", number='3')
             mock_update_ui.assert_called_once_with(fake_recipes)
+            recipe_ui.ingredients_error_label.pack_forget.assert_called_once()
+            recipe_ui.num_of_ingredients_error_label.pack_forget.assert_called_once()
 
+        @pytest.mark.parametrize("entry_value", ["", "   ", None])
+        def test_get_and_display_recipes_empty_entries(self, recipe_ui, mocker, entry_value):
+            """Test that get_and_display_recipes handles empty entries."""
+            # Mocks
+            recipe_ui.ingredients_entry_var = mocker.MagicMock()
+            recipe_ui.ingredients_error_label = mocker.MagicMock()
+            recipe_ui.num_of_ingredients_entry_var = mocker.MagicMock()
+            recipe_ui.num_of_ingredients_error_label = mocker.MagicMock()
+
+            recipe_ui.ingredients_entry_var.get.return_value = entry_value
+            recipe_ui.num_of_ingredients_entry_var.get.return_value = entry_value
+            
+            mock_get_recipes = mocker.patch.object(
+                recipe_ui.script, 
+                "get_recipes", 
+                return_value=[{"error": "Should not call"}]
+            )
+            mock_update_ui = mocker.patch.object(
+                recipe_ui, "display_recipes"
+            )
+
+            # Call method
+            recipe_ui.get_and_display_recipes()
+
+            # Asserts
+            recipe_ui.ingredients_error_label.configure.assert_called_once_with(text="Please enter at least one ingredient.")
+            recipe_ui.ingredients_error_label.pack.assert_called_once_with(padx=10, pady=5)
+            recipe_ui.num_of_ingredients_error_label.configure.assert_called_once_with(text="Please enter a valid number of recipes.")
+            recipe_ui.num_of_ingredients_error_label.pack.assert_called_once_with(padx=10, pady=5)
+
+            mock_get_recipes.assert_not_called()
+            mock_update_ui.assert_not_called()
         
