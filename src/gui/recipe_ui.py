@@ -158,7 +158,7 @@ class RecipeUI:
                 self.recipe_info_label.configure(text="No recipes found.")
                 logging.info("No recipes found to display.")
         except Exception as e:
-            self.recipe_info_label.configure(text=f"Error fetching recipes: {e}")
+            self.recipe_info_label.configure(text="An error occurred while fetching recipes. Please try again later.")
             logging.error(f"Exception occurred while fetching recipes: {e}")
 
     def display_recipes(self, recipes):
