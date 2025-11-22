@@ -131,8 +131,9 @@ class RecipeUI:
             logging.error("No ingredients provided by user.")
             should_proceed = False
         
-        if not num_of_recipes or not num_of_recipes.strip() or not num_of_recipes.isdigit() or int(num_of_recipes) <= 0:
-            self.num_of_recipes_error_label.configure(text="Please enter a valid number of recipes.")
+        num_validation = self.validate_num_of_recipes(num_of_recipes)
+        if "error" in num_validation:
+            self.num_of_recipes_error_label.configure(text=num_validation["error"])
             self.num_of_recipes_error_label.pack(padx=10, pady=5)
             logging.error("Invalid number of recipes provided by user.")
             should_proceed = False
@@ -232,3 +233,18 @@ class RecipeUI:
             else:
                 self.recipe_info_label.configure(text="No recipes found.")
                 logging.info("No recipes found to display.")
+
+    def validate_num_of_recipes(self, value):
+        """Validates the number of recipes input."""
+        if not value or not value.strip():
+            return {"error": "Number of recipes cannot be empty."}
+        try:
+            num = int(value)
+        except ValueError:
+            return {"error": "Number of recipes must be a valid integer."}
+        if num <= 0:
+            return {"error": "Number of recipes must be greater than zero."}
+        if num > 20:
+            return {"error": "Number of recipes must not exceed 20."}
+        
+        return {"valid": ""}
