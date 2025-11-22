@@ -169,7 +169,7 @@ class RecipeUI:
         if "error" in recipes:
             logging.debug(f"Error fetching recipes: {recipes['error']}")
             self.recipe_info_label.configure(
-                text=f"Error fetching data: {recipes['error']}"
+                text="Error fetching recipes, please try again later."
             )
         else:
             if recipes:
