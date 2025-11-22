@@ -1,7 +1,11 @@
+import logging
 import customtkinter as ctk
 from PIL import Image
 from scripts.weather_script import WeatherScript
 
+logging.basicConfig(
+    level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
 class WeatherUI:
     def __init__(self, parent):
@@ -86,13 +90,20 @@ class WeatherUI:
 
     def fetch_and_display_weather(self):
         location = self.location_entry.get()
-        weather_data = self.weather_script.get_weather(location)
+        if not location or not location.strip():
+            self.weather_info_label.configure(text="Please enter a valid location.")
+            return
+        try:
+            weather_data = self.weather_script.get_weather(location.strip())
+        except Exception as e:
+            weather_data = "error"
+            logging.error(f"Error fetching weather data: {e}")
         self.display_weather(weather_data)
 
     def display_weather(self, weather_data):
         if "error" in weather_data:
             self.weather_info_label.configure(
-                text=f"Error fetching data: {weather_data['error']}"
+                text="Error fetching data, please try again later."
             )
         else:
             weather_info = (
