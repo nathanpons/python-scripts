@@ -14,7 +14,7 @@ dependencies = [
     "pyautogui>=0.9.53",
 
     # GUI frameworks
-    "customtkinter>=5.1.2",
+    "customtkinter>=5.2.2",
 
     # Web interaction
     "requests>=2.32.5",
