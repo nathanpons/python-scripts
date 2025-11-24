@@ -227,3 +227,4 @@ class HoldKeyUI:
         """Cleans up the script on UI destruction."""
         if self.script and self.script.is_running:
             self.script.stop()
+            self.script = None
