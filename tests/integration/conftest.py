@@ -19,7 +19,7 @@ def disable_network_calls(monkeypatch):
         raise RuntimeError("Network calls are disabled during tests.")
     monkeypatch.setattr(requests, "get", lambda *args, **kwargs: stunted_get())
 
-@pytest.fixture(scope="function")
+@pytest.fixture()
 def app_window(mocker):
     mocker.patch('os.path.join', return_value="fake_icon.ico")
     mocker.patch.object(ctk.CTk, 'iconbitmap')
