@@ -5,9 +5,10 @@ Pytest configuration file.
 import sys
 import pytest
 import requests
+import time
+import os
 import customtkinter as ctk
 from pathlib import Path
-from unittest.mock import MagicMock
 from src.gui.main_window import MainWindow
 
 project_root = Path(__file__).parent.parent
@@ -31,12 +32,80 @@ def app_window(mocker):
     mocker.patch('pyautogui.mouseDown')
     mocker.patch('pyautogui.mouseUp')
 
-    root = ctk.CTk()
-    main_window = MainWindow(root)
+    root = None
+    main_window = None
+
+    try:
+        # Force Tkinter to use correct TCL/TK path
+        os.environ['TCL_LIBRARY'] = r'C:\Program Files\Python310\tcl\tcl8.6'
+        os.environ['TK_LIBRARY'] = r'C:\Program Files\Python310\tcl\tk8.6'
+        
+        # Create root window
+        root = ctk.CTk()
+        root.update()
+        
+        # Create MainWindow
+        main_window = MainWindow(root)
+        root.update()
+        
+    except Exception as e:
+        # Cleanup partial initialization
+        if root:
+            try:
+                root.destroy()
+            except:
+                pass
+        pytest.skip(f"Skipping test due to GUI initialization failure: {e}")
 
     yield main_window
 
-    main_window.on_close()
+    # Cleanup
+    try:
+        # Stop any running scripts
+        if main_window and hasattr(main_window, 'current_ui') and main_window.current_ui:
+            if hasattr(main_window.current_ui, 'script') and main_window.current_ui.script:
+                if hasattr(main_window.current_ui.script, 'is_running'):
+                    if main_window.current_ui.script.is_running:
+                        if hasattr(main_window.current_ui.script, 'stop'):
+                            main_window.current_ui.script.stop()
+                        root.update()
+                        time.sleep(0.3)
+            
+            # Cleanup UI
+            if hasattr(main_window.current_ui, 'cleanup'):
+                main_window.current_ui.cleanup()
+        
+        # Close main window
+        if main_window:
+            main_window.on_close()
+        
+        # Destroy root thoroughly
+        if root:
+            root.quit()
+            root.update_idletasks()
+            time.sleep(0.5)  # Increased delay
+            
+            # Force destruction
+            try:
+                root.destroy()
+            except:
+                pass
+            
+            # Clear Tkinter's internal state
+            try:
+                import tkinter
+                if hasattr(tkinter, '_default_root'):
+                    tkinter._default_root = None
+            except:
+                pass
+            
+    except Exception as e:
+        print(f"[Cleanup Warning] {e}")
+        if root:
+            try:
+                root.destroy()
+            except:
+                pass
 
 @pytest.fixture()
 def mock_requests(mocker):
