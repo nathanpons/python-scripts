@@ -10,15 +10,27 @@ from gui.hold_key_ui import HoldKeyUI
 
 @pytest.fixture()
 def hold_key_ui(app_window):
+    """Fixture to set up the Hold Key UI in the main application window."""
     app_window.script_type.set("Hold Key")
     app_window.on_selection("Hold Key")
+    app_window.root.update()
+    time.sleep(1)
 
     hold_key_ui = app_window.current_ui
+    assert hold_key_ui is not None, "HoldKeyUI was not created"
+
+    app_window.root.update()
+    time.sleep(1)
 
     yield hold_key_ui
 
-    hold_key_ui.cleanup()
-    time.sleep(0.5)  # Allow time for cleanup
+    try:
+        hold_key_ui.cleanup()
+        app_window.root.update()
+        app_window.on_close()
+        time.sleep(1)
+    except Exception:
+        print("Cleanup failed in hold_key_ui fixture.")
 
 class TestHoldKeyIntegration:
     """Tests for Hold Key integration."""
