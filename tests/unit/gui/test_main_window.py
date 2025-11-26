@@ -2,31 +2,47 @@
 Tests for hold_key_ui.py
 """
 import pytest
-from unittest.mock import Mock
+from unittest.mock import MagicMock, Mock
 from src.gui.main_window import MainWindow
 
 @pytest.fixture
 def mock_root():
     """Fixture to set up a mock CTK root window."""
-    mock_root = Mock()
+    mock_root = MagicMock()
 
-    mock_root.winfo_width.return_value = 400
-    mock_root.winfo_height.return_value = 500
-    mock_root.winfo_screenwidth.return_value = 1920
-    mock_root.winfo_screenheight.return_value = 1080
+    mock_root.winfo_width = MagicMock(return_value=400)
+    mock_root.winfo_height = MagicMock(return_value=500)
+    mock_root.winfo_screenwidth = MagicMock(return_value=1920)
+    mock_root.winfo_screenheight = MagicMock(return_value=1080)
     return mock_root
 
 @pytest.fixture
-def main_window(mock_root):
+def main_window(mock_root, mocker):
     """Fixture to set up MainWindow instance for tests."""
+    mocker.patch('src.gui.main_window.ctk.CTkFont')
+    mocker.patch('src.gui.main_window.ctk.CTkFrame')
+    mocker.patch('src.gui.main_window.ctk.CTkLabel')
+    mocker.patch('src.gui.main_window.ctk.CTkOptionMenu')
+    mocker.patch('src.gui.main_window.ctk.StringVar')
+    
+    mocker.patch('os.path.join', return_value='fake_icon.ico')
+    mocker.patch.object(mock_root, 'iconbitmap')
+    
     window = MainWindow(mock_root)
+    
     yield window
     window.on_close()
 
 class TestMainWindowInitialization:
     """Test that MainWindow initializes correctly."""
-    def test_window_root_variables_initialization(self, mock_root):
+    def test_window_root_variables_initialization(self, mock_root, mocker):
         """Test that window variables are set correctly."""
+        mocker.patch('src.gui.main_window.ctk.CTkFont')
+        mocker.patch('src.gui.main_window.ctk.CTkFrame')
+        mocker.patch('src.gui.main_window.ctk.CTkLabel')
+        mocker.patch('src.gui.main_window.ctk.CTkOptionMenu')
+        mocker.patch('src.gui.main_window.ctk.StringVar')
+        
         MainWindow(mock_root)
 
         mock_root.title.assert_called_with("Nathan's Python Scripts")
@@ -52,6 +68,12 @@ class TestMainWindowInitialization:
 
     def test_ui_setup_called(self, mock_root, mocker):
         """Test that setup_ui is called during initialization."""
+        mocker.patch('src.gui.main_window.ctk.CTkFont')
+        mocker.patch('src.gui.main_window.ctk.CTkFrame')
+        mocker.patch('src.gui.main_window.ctk.CTkLabel')
+        mocker.patch('src.gui.main_window.ctk.CTkOptionMenu')
+        mocker.patch('src.gui.main_window.ctk.StringVar')
+        
         mock_setup_ui = mocker.patch.object(MainWindow, 'setup_ui')
         MainWindow(mock_root)
         mock_setup_ui.assert_called_once()
@@ -64,6 +86,9 @@ class TestMainWindowSetupUI:
     """Test that UI components are created in setup_ui."""
     def test_ui_creates_frames(self, mock_root, mocker):
         """Test that main, header, and selection frames are created."""
+        mocker.patch('src.gui.main_window.ctk.CTkFont')
+        mocker.patch('src.gui.main_window.ctk.StringVar')
+
         mock_frame = mocker.patch("src.gui.main_window.ctk.CTkFrame")
         mock_label = mocker.patch("src.gui.main_window.ctk.CTkLabel")
         mock_option_menu = mocker.patch("src.gui.main_window.ctk.CTkOptionMenu")
@@ -80,6 +105,11 @@ class TestMainWindowSetupUI:
 
     def test_combobox_values(self, mock_root, mocker):
         """Test that combobox has correct script values."""
+        mocker.patch('src.gui.main_window.ctk.CTkFont')
+        mocker.patch('src.gui.main_window.ctk.CTkFrame')
+        mocker.patch('src.gui.main_window.ctk.CTkLabel')
+        mocker.patch('src.gui.main_window.ctk.StringVar')
+        
         mock_option_menu = mocker.patch("src.gui.main_window.ctk.CTkOptionMenu")
 
         window = MainWindow(mock_root)
@@ -171,10 +201,22 @@ class TestMainWindowSetupMethods:
         ("setup_weather_ui", "1000x600"),
         ("setup_recipe_ui", "1000x600"),
     ])
-    def test_setup_adjusts_window_size_when_smaller(self, mock_root, setup_method, expected_size):
+    def test_setup_adjusts_window_size_when_smaller(self, mocker, setup_method, expected_size):
         """Test that setup methods adjust window size when the current size is smaller."""
-        mock_root.winfo_width.return_value = 200
-        mock_root.winfo_height.return_value = 300
+        mocker.patch('src.gui.main_window.ctk.CTkFont')
+        mocker.patch('src.gui.main_window.ctk.CTkFrame')
+        mocker.patch('src.gui.main_window.ctk.CTkLabel')
+        mocker.patch('src.gui.main_window.ctk.CTkOptionMenu')
+        mocker.patch('src.gui.main_window.ctk.StringVar')
+        mocker.patch('src.gui.main_window.HoldKeyUI', return_value=MagicMock())
+        mocker.patch('src.gui.main_window.WeatherUI', return_value=MagicMock())
+        mocker.patch('src.gui.main_window.RecipeUI', return_value=MagicMock())
+
+        mock_root = MagicMock()
+        mock_root.winfo_width = MagicMock(return_value=200)
+        mock_root.winfo_height = MagicMock(return_value=300)
+        
+        
         window = MainWindow(mock_root)
 
         window.root.geometry.reset_mock()
@@ -188,10 +230,23 @@ class TestMainWindowSetupMethods:
         ("setup_weather_ui"),
         ("setup_recipe_ui"),
     ])
-    def test_setup_does_not_adjust_size_when_larger(self, mock_root, setup_method):
+    def test_setup_does_not_adjust_size_when_larger(self, mocker, setup_method):
         """Test that setup methods do not adjust window size when the current size is larger."""
-        mock_root.winfo_width.return_value = 2000
-        mock_root.winfo_height.return_value = 1500
+        
+        mocker.patch('src.gui.main_window.ctk.CTkFont')
+        mocker.patch('src.gui.main_window.ctk.CTkFrame')
+        mocker.patch('src.gui.main_window.ctk.CTkLabel')
+        mocker.patch('src.gui.main_window.ctk.CTkOptionMenu')
+        mocker.patch('src.gui.main_window.ctk.StringVar')
+        mocker.patch('src.gui.main_window.HoldKeyUI', return_value=MagicMock())
+        mocker.patch('src.gui.main_window.WeatherUI', return_value=MagicMock())
+        mocker.patch('src.gui.main_window.RecipeUI', return_value=MagicMock())
+
+        mock_root = MagicMock()
+        mock_root.winfo_width = MagicMock(return_value=2000)
+        mock_root.winfo_height = MagicMock(return_value=1500)
+        
+        
         window = MainWindow(mock_root)
 
         window.root.geometry.reset_mock()
@@ -205,9 +260,22 @@ class TestMainWindowSetupMethods:
         ("setup_weather_ui", "1000x600"),
         ("setup_recipe_ui", "1000x600"),
     ])
-    def test_setup_does_not_adjust_size_when_equal(self, mock_root, setup_method, expected_size):
+    def test_setup_does_not_adjust_size_when_equal(self, mocker, setup_method, expected_size):  
+        """Test that setup methods do not adjust window size when the current size is equal."""
+        mocker.patch('src.gui.main_window.ctk.CTkFont')
+        mocker.patch('src.gui.main_window.ctk.CTkFrame')
+        mocker.patch('src.gui.main_window.ctk.CTkLabel')
+        mocker.patch('src.gui.main_window.ctk.CTkOptionMenu')
+        mocker.patch('src.gui.main_window.ctk.StringVar')
+        mocker.patch('src.gui.main_window.HoldKeyUI', return_value=MagicMock())
+        mocker.patch('src.gui.main_window.WeatherUI', return_value=MagicMock())
+        mocker.patch('src.gui.main_window.RecipeUI', return_value=MagicMock())
+
+        mock_root = MagicMock()
         mock_root.winfo_width.return_value = int(expected_size.split('x')[0])
         mock_root.winfo_height.return_value = int(expected_size.split('x')[1])
+        
+        
         window = MainWindow(mock_root)
 
         window.root.geometry.reset_mock()
