@@ -89,3 +89,105 @@ class TestHoldKeyIntegration:
 
             assert hold_key_ui.script is None
 
+    class TestHoldKeyUIInteractions:
+        """Tests for UI interactions."""
+
+        def test_interval_ui_visibility_based_on_spam_key(self, hold_key_ui):
+            """Test that interval UI visibility changes based on spam key option."""
+            # Initially, interval UI should be hidden
+            assert hold_key_ui.is_spam_key_var.get() is False
+            assert hold_key_ui.interval_frame_visible is False
+
+            # Enable spam key
+            hold_key_ui.is_spam_key_var.set(True)
+            hold_key_ui.toggle_interval_ui()
+
+            # Assertions
+            assert hold_key_ui.interval_frame_visible is True
+
+            # Disable spam key
+            hold_key_ui.is_spam_key_var.set(False)
+            hold_key_ui.toggle_interval_ui()
+
+            # Assertions
+            assert hold_key_ui.interval_frame_visible is False
+
+        def test_ui_components_disable_when_script_is_running(self, hold_key_ui):
+            """Test that UI components disable when the script is running."""
+            # Start the script
+            hold_key_ui.toggle_script()
+
+            # Assertions
+            assert hold_key_ui.hold_key_optionmenu.cget("state") == "disabled"
+            assert hold_key_ui.toggle_key_optionmenu.cget("state") == "disabled"
+            assert hold_key_ui.spam_key_switch.cget("state") == "disabled"
+
+            # Stop the script
+            hold_key_ui.toggle_script()
+
+            # Assertions after stopping
+            assert hold_key_ui.hold_key_optionmenu.cget("state") == "normal"
+            assert hold_key_ui.toggle_key_optionmenu.cget("state") == "normal"
+            assert hold_key_ui.spam_key_switch.cget("state") == "normal"
+
+        def test_spam_key_toggle_shows_interval_ui(self, hold_key_ui):
+            """Test that toggling the spam key option shows/hides interval UI."""
+            # Initially, interval UI should be hidden
+            assert hold_key_ui.is_spam_key_var.get() is False
+            assert hold_key_ui.interval_frame_visible is False
+
+            # Enable spam key
+            hold_key_ui.is_spam_key_var.set(True)
+            hold_key_ui.toggle_interval_ui()
+
+            # Assertions
+            assert hold_key_ui.interval_frame_visible is True
+
+            # Disable spam key
+            hold_key_ui.is_spam_key_var.set(False)
+            hold_key_ui.toggle_interval_ui()
+
+            # Assertions
+            assert hold_key_ui.interval_frame_visible is False
+
+        @pytest.mark.parametrize("interval_value,is_valid", [
+            ("100", True),
+            ("1", True),
+            ("0.999", False),
+            ("0", False),
+            ("-0.1", False),
+            ("-1", False),
+            ("abc", False),
+            ("1.5e2", False),
+            (1, True),
+            (-1, False),
+        ])
+        def test_interval_validation(self, hold_key_ui, interval_value, is_valid):
+            """Test the interval input validation."""
+            # Assert script is stopped initially
+            assert hold_key_ui.script is None
+            assert hold_key_ui.status_label.cget("text") == "Status: Stopped"
+
+            # Set invalid interval
+            hold_key_ui.is_spam_key_var.set(True)
+            hold_key_ui.toggle_interval_ui()
+            hold_key_ui.interval_var_milliseconds.set(interval_value)
+            hold_key_ui.toggle_script()
+
+            # Assertions
+            if is_valid:
+                # Script should start
+                assert hold_key_ui.script is not None
+                assert hold_key_ui.script.is_running is True
+                assert hold_key_ui.status_label.cget("text") == "Status: Running"
+
+                # Stop the script for cleanup
+                hold_key_ui.toggle_script()
+                assert hold_key_ui.script is None
+                assert hold_key_ui.status_label.cget("text") == "Status: Stopped"
+            else:
+                # Script should not start
+                assert hold_key_ui.script is None
+                assert hold_key_ui.status_label.cget("text") == "Status: Stopped"
+
+            
