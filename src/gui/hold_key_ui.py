@@ -191,7 +191,8 @@ class HoldKeyUI:
                 raise ValueError("Interval must be a positive integer.")
 
             logging.debug(f"Validated interval: {value} milliseconds.")
-            self.interval_error_label.grid_forget()
+            self.interval_error_label.configure(text="")
+            self.interval_error_label.grid_remove()
             return True
         except (ValueError, TypeError):
             logging.error("Interval value must be a positive integer.")
