@@ -17,13 +17,13 @@ def weather_ui(app_window, mocker):
     app_window.script_type.set("Weather")
     app_window.on_selection("Weather")
     app_window.root.update()
-    time.sleep(1)
+    time.sleep(0.1)
 
     weather_ui = app_window.current_ui
     assert weather_ui is not None, "WeatherUI was not created"
 
     app_window.root.update()
-    time.sleep(1)
+    time.sleep(0.1)
 
     yield weather_ui
 
@@ -72,14 +72,13 @@ class TestWeatherIntegration:
         """Tests for the Weather workflow functionality."""
 
         def test_full_weather_workflow_success(self, mocker, weather_ui, mock_weather_response, mock_requests):
-            """Test complete workflow: select script -> enter location -> fetch weather."""
+            """Test complete successful workflow."""
             mock_requests.json.return_value = mock_weather_response
             mocker.patch.object(weather_ui.weather_script, 'get_icon_path', return_value=None)
 
             # Enter location
             weather_ui.location_entry.insert(0, "New York")
             weather_ui.parent.update()
-            time.sleep(1)
             
             # Fetch weather
             weather_ui.fetch_and_display_weather()
@@ -89,3 +88,56 @@ class TestWeatherIntegration:
             assert "Clear" in weather_info_text
             assert "25.5" in weather_info_text
             assert "60%" in weather_info_text
+
+        def test_full_weather_workflow_api_error(self, mocker, weather_ui, mock_weather_response, mock_requests):
+            """Test complete workflow with api error."""
+            mock_requests.json.return_value = mock_weather_response
+            mock_requests.status_code = 500
+            mocker.patch.object(weather_ui.weather_script, 'get_icon_path', return_value=None)
+
+            # Enter location
+            weather_ui.location_entry.insert(0, "New York")
+            weather_ui.parent.update()
+            
+            # Fetch weather
+            weather_ui.fetch_and_display_weather()
+            
+            # Verify display updated
+            weather_info_text = weather_ui.weather_info_label.cget("text")
+            assert "error" in weather_info_text.lower()
+
+        def test_weather_workflow_empty_location(self, weather_ui, mocker):
+            """Test workflow with empty location input."""
+            mocker.patch.object(weather_ui.weather_script, 'get_icon_path', return_value=None)
+            
+            weather_ui.fetch_and_display_weather()
+            
+            weather_info_text = weather_ui.weather_info_label.cget("text")
+            assert "Please enter a valid location." in weather_info_text
+
+        def test_switch_between_scripts_cleanup(self, app_window, mocker):
+            """Test switching from Weather to another script cleans up properly."""
+            mocker.patch('builtins.open', mocker.mock_open(read_data='{"api_gateway_url": "http://fakeapi.test"}'))
+            mocker.patch('scripts.weather_script.get_resource_path', return_value='config/api_config.json')
+            mocker.patch('os.path.join', return_value="fake_icon.ico")
+
+            # Switch to Weather script
+            app_window.script_type.set("Weather")
+            app_window.on_selection("Weather")
+            app_window.root.update()
+            time.sleep(0.1)
+
+            app_window.root.update()
+            time.sleep(0.1)
+
+            # Assert current script is WeatherUI
+            assert isinstance(app_window.current_ui, WeatherUI)
+
+            # Switch to different script
+            app_window.script_type.set("Hold Key")
+            app_window.on_selection("Hold Key")
+            app_window.root.update()
+            time.sleep(0.1)
+            
+            # Verify Weather UI was cleaned up
+            assert not isinstance(app_window.current_ui, WeatherUI)
