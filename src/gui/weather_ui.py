@@ -49,8 +49,12 @@ class WeatherUI:
         )
         self.location_label.pack(padx=10, pady=5)
 
+        self.location_entry_var = ctk.StringVar()
         self.location_entry = ctk.CTkEntry(
-            self.location_frame, width=200, font=self.default_font
+            self.location_frame,
+            textvariable=self.location_entry_var,
+            width=200,
+            font=self.default_font,
         )
         self.location_entry.pack(padx=10, pady=5)
 
@@ -89,7 +93,7 @@ class WeatherUI:
         self.weather_info_label.grid(row=2, column=0, columnspan=2, padx=10, pady=10)
 
     def fetch_and_display_weather(self):
-        location = self.location_entry.get()
+        location = self.location_entry_var.get()
         if not location or not location.strip():
             self.weather_info_label.configure(text="Please enter a valid location.")
             return
