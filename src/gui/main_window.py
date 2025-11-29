@@ -101,6 +101,8 @@ class MainWindow:
         for widget in self.dynamic_content_frame.winfo_children():
             widget.destroy()
 
+        self.current_ui = None
+
     def setup_hold_key_ui(self):
         """Sets up the UI for the Hold Key script."""
         self.current_ui = HoldKeyUI(self.dynamic_content_frame)
