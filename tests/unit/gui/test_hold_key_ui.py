@@ -157,6 +157,26 @@ class TestHoldKeyUI:
 
             assert ui.interval_frame_visible is True
 
+        def test_spam_key_toggle_shows_interval_ui(self, hold_key_ui):
+            """Test that toggling the spam key option shows/hides interval UI."""
+            # Initially, interval UI should be hidden
+            assert hold_key_ui.is_spam_key_var.get() is False
+            assert hold_key_ui.interval_frame_visible is False
+
+            # Enable spam key
+            hold_key_ui.is_spam_key_var.set(True)
+            hold_key_ui.toggle_interval_ui()
+
+            # Assertions
+            assert hold_key_ui.interval_frame_visible is True
+
+            # Disable spam key
+            hold_key_ui.is_spam_key_var.set(False)
+            hold_key_ui.toggle_interval_ui()
+
+            # Assertions
+            assert hold_key_ui.interval_frame_visible is False
+
         def test_toggle_interval_ui_hides_interval_frame(self, setup_hold_key_ui):
             """Test that toggle_interval_ui hides the interval frame when spam key is disabled."""
             ui = setup_hold_key_ui
