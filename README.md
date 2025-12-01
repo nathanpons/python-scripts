@@ -22,6 +22,62 @@ A modern desktop application built with Python and CustomTkinter that provides u
 
 - **Secure API Key Management**: API keys are stored server-side in AWS Lambda functions, not exposed in the desktop application
 
+## Tech Stack
+
+### Frontend/GUI
+
+- **Python 3.10** - Core application language
+- **CustomTkinter** - Desktop GUI
+
+### Backend
+
+- **Python 3.10** - Business logic and scripting
+- **API Integration** - Restful API consumption for weather and recipe data
+
+### Testing
+
+- **Pytest** - Primary testing framework
+- **PyAutoGUI** - E2E Testing
+- **HTML Coverage Reports** - Visual code coverage metrics
+- **Conftest.py** - Shared test fixtures and configuration
+- **3-Tiered Test Architecture:**
+  - Unit Tests
+  - Integrations Tests
+  - E2E Tests
+
+### Cloud and DevOps
+
+- **Terraform** - Infrastructure as Code
+- **AWS Lambda** - Serverless function deployment
+- **Python Lambda Handlers** - Cloud function implementation
+- **Dependency Isolation** - Services logically separated
+
+### Build and Deployment
+
+- **PyInstaller** - Executable creation
+- **pip** - Package Manager
+- **Virtual Environment** - Dependency isolation
+
+### Development Tools
+
+- **Git** - Version Control
+- **VS Code** - IDE
+- **Python Package Structure** - Modular architecture with __init__.py
+
+### Project Structure
+
+- Source Control - Includes .gitignore and .gitattributes
+- Modular Architecture:
+  - src/ - Main application code and logic
+    - gui/ - User Interface with CustomTKinter
+    - scripts/ - Script logic
+  - Terraform/ - Infrastructure configuration
+  - Lambda/ - Cloud functions
+  - Tests/ - All Testing
+    - Unit/ - Unit tests for each script and GUI
+    - Integration/ - Tests for app connections
+    - E2E/ - Full workflow testing
+
 ## Prerequisites
 
 - python 3.10 or higher
