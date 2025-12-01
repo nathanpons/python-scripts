@@ -66,22 +66,22 @@ A modern desktop application built with Python and CustomTkinter that provides u
 
 ### Project Structure
 
-- Source Control - Includes .gitignore and .gitattributes
-- Modular Architecture:
-  - src/ - Main application code and logic
-    - gui/ - User Interface with CustomTKinter
-    - scripts/ - Script logic
-  - Terraform/ - Infrastructure configuration
-  - Lambda/ - Cloud functions
-  - Tests/ - All Testing
-    - Unit/ - Unit tests for each script and GUI
-    - Integration/ - Tests for app connections
-    - E2E/ - Full workflow testing
+- **Source Control** - Includes .gitignore and .gitattributes
+- **Modular Architecture:**
+  - **src/** - Main application code and logic
+    - **gui/** - User Interface with CustomTKinter
+    - **scripts/** - Script logic
+  - **Terraform/** - Infrastructure configuration
+  - **Lambda/** - Cloud functions
+  - **Tests/** - All Testing
+    - **Unit/** - Unit tests for each script and GUI
+    - **Integration/** - Tests for app connections
+    - **E2E/** - Full workflow testing
 
 ## Prerequisites
 
-- python 3.10 or higher
-- pip
+- Python 3.10 or higher
+- Pip
 
 ## Installation
 
