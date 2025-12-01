@@ -88,8 +88,7 @@ A modern desktop application built with Python and CustomTkinter that provides u
 - There are a few options for installation
 
  1. Download the official release on the 'Releases' tab on GitHub and running the .EXE file. (Recommended)
- 2. Cloning the repository and running the app through local code and creating an AWS cloud environment. You will need your own API keys for **Spoonacular** and **OpenWeatherApi**. You will also need to provide 
- your own AWS credentials. Again, it is recommended to just install the official release as described above.
+ 2. Cloning the repository and running the app through local code and creating an AWS cloud environment. You will need your own API keys for **Spoonacular** and **OpenWeatherApi**. You will also need to provide your own AWS credentials. Again, it is recommended to just install the official release as described above.
 
     ```bash
     git clone https://github.com/PapsBurr/python-scripts.git
