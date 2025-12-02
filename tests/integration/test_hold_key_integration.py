@@ -132,6 +132,27 @@ class TestHoldKeyIntegration:
             assert hold_key_ui.toggle_key_optionmenu.cget("state") == "normal"
             assert hold_key_ui.spam_key_switch.cget("state") == "normal"
 
+        
+        def test_spam_key_toggle_shows_interval_ui(self, hold_key_ui):
+            """Test that toggling the spam key option shows/hides interval UI."""
+            # Initially, interval UI should be hidden
+            assert hold_key_ui.is_spam_key_var.get() is False
+            assert hold_key_ui.interval_frame_visible is False
+
+            # Enable spam key
+            hold_key_ui.is_spam_key_var.set(True)
+            hold_key_ui.toggle_interval_ui()
+
+            # Assertions
+            assert hold_key_ui.interval_frame_visible is True
+
+            # Disable spam key
+            hold_key_ui.is_spam_key_var.set(False)
+            hold_key_ui.toggle_interval_ui()
+
+            # Assertions
+            assert hold_key_ui.interval_frame_visible is False
+
         @pytest.mark.parametrize("interval_value,is_valid", [
             ("100", True),
             ("1", True),
