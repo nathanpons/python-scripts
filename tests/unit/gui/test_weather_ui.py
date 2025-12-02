@@ -56,7 +56,7 @@ class TestWeatherUI:
             """Test that fetch_and_display_weather calls get_weather and display_weather."""
             # Mocks
             mocker.patch.object(
-                weather_ui.location_entry, "get", return_value="New York"
+                weather_ui.location_entry_var, "get", return_value="New York"
             )
             mock_display_weather = mocker.patch.object(weather_ui, "display_weather")
             fake_weather_data = {
@@ -82,7 +82,7 @@ class TestWeatherUI:
             """Test that fetch_and_display_weather handles empty location input."""
             # Mocks
             mocker.patch.object(
-                weather_ui.location_entry, "get", return_value=location_input
+                weather_ui.location_entry_var, "get", return_value=location_input
             )
             mock_get_weather = mocker.patch.object(
                 weather_ui.weather_script, "get_weather"
@@ -100,7 +100,7 @@ class TestWeatherUI:
             """Test that fetch_and_display_weather handles error in weather data."""
             # Mocks
             mocker.patch.object(
-                weather_ui.location_entry, "get", return_value="InvalidLocation"
+                weather_ui.location_entry_var, "get", return_value="InvalidLocation"
             )
             mock_get_weather = mocker.patch.object(
                 weather_ui.weather_script,
