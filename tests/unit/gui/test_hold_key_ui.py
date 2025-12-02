@@ -6,22 +6,36 @@ from unittest.mock import Mock, patch
 from src.gui.hold_key_ui import HoldKeyUI
 
 @pytest.fixture
-def setup_hold_key_ui():
+def hold_key_ui(mocker):
     """Fixture to set up HoldKeyUI instance for tests."""
-    mock_parent_frame = Mock()
-    ui = HoldKeyUI(mock_parent_frame)
+    mocker.patch('keyboard.add_hotkey')
+    mocker.patch('keyboard.remove_hotkey')
+    mocker.patch('keyboard.press')
+    mocker.patch('keyboard.release')
+    mocker.patch('keyboard.is_pressed', return_value=False)
+    
+    mocker.patch('pyautogui.mouseDown')
+    mocker.patch('pyautogui.mouseUp')
+    mocker.patch('pyautogui.click')
 
-    ui.interval_var_milliseconds.get.return_value = "10"
-    yield ui
-    ui.cleanup()
+    mock_thread = mocker.patch('threading.Thread')
+    mock_thread.return_value.start = mocker.Mock()
+    mock_thread.return_value.join = mocker.Mock()
+
+    mock_parent_frame = mocker.MagicMock()
+    hold_key_ui = HoldKeyUI(mock_parent_frame)
+
+    yield hold_key_ui
+
+    hold_key_ui.cleanup()
 
 class TestHoldKeyUI:
     """Tests for HoldKeyUI class."""
     class TestHoldKeyUIInitialization:
         """Tests for HoldKeyUI initialization."""
-        def test_initialization(self, setup_hold_key_ui):
+        def test_initialization(self, hold_key_ui):
             """Test that HoldKeyUI initializes correctly."""
-            ui = setup_hold_key_ui
+            ui = hold_key_ui
 
             assert ui.title_font is not None
             assert ui.default_font is not None
@@ -29,9 +43,9 @@ class TestHoldKeyUI:
             assert ui.hold_keys == ["left mouse", "right mouse", "w", "a", "s", "d"]
             assert ui.toggle_keys == ["f6", "f7", "f8", "f9"]
 
-        def test_ui_components_created(self, setup_hold_key_ui):
+        def test_ui_components_created(self, hold_key_ui):
             """Test that UI components are created."""
-            ui = setup_hold_key_ui
+            ui = hold_key_ui
 
             assert hasattr(ui, "title_label")
             assert hasattr(ui, "hold_key_label")
@@ -44,9 +58,9 @@ class TestHoldKeyUI:
 
     class TestHoldKeyUIToggleScript:
         @patch("src.gui.hold_key_ui.HoldKeyScript")
-        def test_toggle_script_starts_script(self, mock_hold_key_script, setup_hold_key_ui):
+        def test_toggle_script_starts_script(self, mock_hold_key_script, hold_key_ui):
             """Test that toggle_script starts the script when not running."""
-            ui = setup_hold_key_ui
+            ui = hold_key_ui
 
             mock_script_instance = mock_hold_key_script.return_value
             mock_script_instance.is_running = False
@@ -56,9 +70,9 @@ class TestHoldKeyUI:
             mock_hold_key_script.assert_called_once()
             mock_script_instance.start.assert_called_once()
 
-        def test_toggle_script_stops_script(self, setup_hold_key_ui):
+        def test_toggle_script_stops_script(self, hold_key_ui):
             """Test that toggle_script stops the script when running."""
-            ui = setup_hold_key_ui
+            ui = hold_key_ui
 
             mock_script_instance = Mock()
             mock_script_instance.is_running = True
@@ -69,9 +83,9 @@ class TestHoldKeyUI:
             mock_script_instance.stop.assert_called_once()
 
         @patch("src.gui.hold_key_ui.HoldKeyScript")
-        def test_toggle_script_multiple_times(self, mock_hold_key_script, setup_hold_key_ui):
+        def test_toggle_script_multiple_times(self, mock_hold_key_script, hold_key_ui):
             """Test that toggle_script starts and stops the script multiple times"""
-            ui = setup_hold_key_ui
+            ui = hold_key_ui
             
             mock_script_instance = mock_hold_key_script.return_value
             mock_script_instance.is_running = False
@@ -93,9 +107,9 @@ class TestHoldKeyUI:
             assert mock_script_instance.stop.call_count == 2
             
         @patch("src.gui.hold_key_ui.HoldKeyScript")
-        def test_toggle_script_ui_updates_on_start(self, mock_hold_key_script, setup_hold_key_ui):
+        def test_toggle_script_ui_updates_on_start(self, mock_hold_key_script, hold_key_ui):
             """Test that toggle_script updates UI components correctly on start."""
-            ui = setup_hold_key_ui
+            ui = hold_key_ui
 
             ui.toggle_script_button_text = Mock()
             ui.toggle_script_button_text.get.return_value = "Start"
@@ -114,9 +128,9 @@ class TestHoldKeyUI:
             ui.spam_key_switch.configure.assert_called_with(state="disabled")
 
         @patch("src.gui.hold_key_ui.HoldKeyScript")
-        def test_toggle_script_ui_updates_on_stop(self, mock_hold_key_script, setup_hold_key_ui):
+        def test_toggle_script_ui_updates_on_stop(self, mock_hold_key_script, hold_key_ui):
             """Test that toggle_script updates UI components correctly on stop."""
-            ui = setup_hold_key_ui
+            ui = hold_key_ui
 
             mock_script_instance = mock_hold_key_script.return_value
             mock_script_instance.is_running = True
@@ -133,9 +147,9 @@ class TestHoldKeyUI:
             ui.spam_key_switch.configure.assert_called_with(state="normal")
 
     class TestHoldKeyUIToggleHold:
-        def test_toggle_hold_when_running(self, setup_hold_key_ui):
+        def test_toggle_hold_when_running(self, hold_key_ui):
             """Test that toggle_hold calls script.toggle_hold when running."""
-            ui = setup_hold_key_ui
+            ui = hold_key_ui
 
             mock_script_instance = Mock()
             mock_script_instance.is_running = True
@@ -146,9 +160,9 @@ class TestHoldKeyUI:
             mock_script_instance.toggle_hold.assert_called_once()
 
     class TestSpamKeySwitch:
-        def test_toggle_interval_ui_shows_interval_frame(self, setup_hold_key_ui):
+        def test_toggle_interval_ui_shows_interval_frame(self, hold_key_ui):
             """Test that toggle_interval_ui shows the interval frame when spam key is enabled."""
-            ui = setup_hold_key_ui
+            ui = hold_key_ui
 
             ui.spam_key_switch.get = Mock(return_value=True)
             ui.interval_frame_visible = False
@@ -177,9 +191,9 @@ class TestHoldKeyUI:
             # Assertions
             assert hold_key_ui.interval_frame_visible is False
 
-        def test_toggle_interval_ui_hides_interval_frame(self, setup_hold_key_ui):
+        def test_toggle_interval_ui_hides_interval_frame(self, hold_key_ui):
             """Test that toggle_interval_ui hides the interval frame when spam key is disabled."""
-            ui = setup_hold_key_ui
+            ui = hold_key_ui
 
             ui.spam_key_switch.get = Mock(return_value=False)
             ui.interval_frame_visible = True
@@ -190,9 +204,9 @@ class TestHoldKeyUI:
 
     class TestHoldKeyUIIntervalValidation:
         """Tests for HoldKeyUI logic methods."""
-        def test_interval_frame_initially_hidden(self, setup_hold_key_ui):
+        def test_interval_frame_initially_hidden(self, hold_key_ui):
             """Test that the interval frame is initially hidden."""
-            ui = setup_hold_key_ui
+            ui = hold_key_ui
 
             assert ui.interval_frame_visible is False
 
@@ -207,9 +221,9 @@ class TestHoldKeyUI:
             "",
             None
         ])
-        def test_invalid_interval_values(self, invalid_value, setup_hold_key_ui):
+        def test_invalid_interval_values(self, invalid_value, hold_key_ui):
             """Test that setting an invalid interval shows an error."""
-            ui = setup_hold_key_ui
+            ui = hold_key_ui
 
             ui.interval_var_milliseconds.get.return_value = invalid_value
 
@@ -223,9 +237,9 @@ class TestHoldKeyUI:
             "100", 
             "4000000"
             ])
-        def test_valid_interval_values(self, valid_value, setup_hold_key_ui):
+        def test_valid_interval_values(self, valid_value, hold_key_ui):
             """Test that setting a valid interval passes validation."""
-            ui = setup_hold_key_ui
+            ui = hold_key_ui
 
             ui.interval_var_milliseconds.get.return_value = valid_value
 
@@ -235,9 +249,9 @@ class TestHoldKeyUI:
             
     class TestHoldKeyUICleanup:
         @patch("src.gui.hold_key_ui.HoldKeyScript")
-        def test_cleanup_stops_running_script(self, mock_hold_key_script, setup_hold_key_ui):
+        def test_cleanup_stops_running_script(self, mock_hold_key_script, hold_key_ui):
             """Test that cleanup stops the script if it is running."""
-            ui = setup_hold_key_ui
+            ui = hold_key_ui
 
             mock_script_instance = mock_hold_key_script.return_value
             mock_script_instance.is_running = True
@@ -248,9 +262,9 @@ class TestHoldKeyUI:
             mock_script_instance.stop.assert_called_once()
 
         @patch("src.gui.hold_key_ui.HoldKeyScript")
-        def test_cleanup_does_nothing_if_script_not_running(self, mock_hold_key_script, setup_hold_key_ui):
+        def test_cleanup_does_nothing_if_script_not_running(self, mock_hold_key_script, hold_key_ui):
             """Test that cleanup does nothing if the script is not running."""
-            ui = setup_hold_key_ui
+            ui = hold_key_ui
 
             mock_script_instance = mock_hold_key_script.return_value
             mock_script_instance.is_running = False
