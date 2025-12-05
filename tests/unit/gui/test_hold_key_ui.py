@@ -59,8 +59,9 @@ class TestHoldKeyUI:
             assert hasattr(ui, "status_label")
 
     class TestHoldKeyUIToggleScript:
+        """Tests for toggle_script method."""
         @patch("src.gui.hold_key_ui.HoldKeyScript")
-        def test_toggle_script_starts_script(self, mock_hold_key_script, hold_key_ui):
+        def test_toggle_script_starts_script(self, mock_hold_key_script, hold_key_ui, mocker):
             """Test that toggle_script starts the script when not running."""
             ui = hold_key_ui
 
@@ -152,7 +153,11 @@ class TestHoldKeyUI:
             ui.toggle_key_optionmenu.configure.assert_called_with(state="normal")
             ui.spam_key_switch.configure.assert_called_with(state="normal")
 
+    class TestEntriesForHoldKey:
+        """Test different entries for which key is held down."""
+
     class TestHoldKeyUIToggleHold:
+        """Tests for toggle_hold method."""
         def test_toggle_hold_when_running(self, hold_key_ui):
             """Test that toggle_hold calls script.toggle_hold when running."""
             ui = hold_key_ui
@@ -207,7 +212,7 @@ class TestHoldKeyUI:
             assert keyboard_grid_remove_mock.is_called
             assert mouse_grid_mock.is_called
             assert mouse_grid_remove_mock.is_not_called
-            
+
         def test_toggle_interval_ui_shows_interval_frame(self, hold_key_ui):
             """Test that toggle_interval_ui shows the interval frame when spam key is enabled."""
             ui = hold_key_ui
