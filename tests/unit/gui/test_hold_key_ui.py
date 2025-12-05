@@ -40,7 +40,7 @@ class TestHoldKeyUI:
             assert ui.title_font is not None
             assert ui.default_font is not None
             assert ui.script is None
-            assert ui.hold_keys == ["left mouse", "right mouse", "w", "a", "s", "d"]
+            assert ui.hold_mouse_keys == ["left mouse", "right mouse"]
             assert ui.toggle_keys == ["f6", "f7", "f8", "f9"]
 
         def test_ui_components_created(self, hold_key_ui):
@@ -48,8 +48,10 @@ class TestHoldKeyUI:
             ui = hold_key_ui
 
             assert hasattr(ui, "title_label")
+            assert hasattr(ui, "key_type_switch")
             assert hasattr(ui, "hold_key_label")
-            assert hasattr(ui, "hold_key_optionmenu")
+            assert hasattr(ui, "hold_mouse_key_optionmenu")
+            assert hasattr(ui, "hold_keyboard_key_entry")
             assert hasattr(ui, "toggle_key_label")
             assert hasattr(ui, "toggle_key_optionmenu")
             assert hasattr(ui, "spam_key_switch")
@@ -123,7 +125,9 @@ class TestHoldKeyUI:
             ui.toggle_script_button_text.set.assert_called_with("Stop")
             
             ui.status_label.configure.assert_called_with(text="Status: Running")
-            ui.hold_key_optionmenu.configure.assert_called_with(state="disabled")
+            ui.key_type_switch.configure.assert_called_with(state="disabled")
+            ui.hold_keyboard_key_entry.configure.assert_called_with(state="disabled")
+            ui.hold_mouse_key_optionmenu.configure.assert_called_with(state="disabled")
             ui.toggle_key_optionmenu.configure.assert_called_with(state="disabled")
             ui.spam_key_switch.configure.assert_called_with(state="disabled")
 
@@ -142,7 +146,9 @@ class TestHoldKeyUI:
             ui.toggle_script_button_text.set.assert_called_with("Start")
             
             ui.status_label.configure.assert_called_with(text="Status: Stopped")
-            ui.hold_key_optionmenu.configure.assert_called_with(state="normal")
+            ui.key_type_switch.configure.assert_called_with(state="normal")
+            ui.hold_keyboard_key_entry.configure.assert_called_with(state="normal")
+            ui.hold_mouse_key_optionmenu.configure.assert_called_with(state="normal")
             ui.toggle_key_optionmenu.configure.assert_called_with(state="normal")
             ui.spam_key_switch.configure.assert_called_with(state="normal")
 
@@ -159,7 +165,49 @@ class TestHoldKeyUI:
 
             mock_script_instance.toggle_hold.assert_called_once()
 
-    class TestSpamKeySwitch:
+    class TestSwitchChildVisibility:
+        """Tests for switches that cause other UI components to show or hide."""
+        def test_toggle_key_type_ui_shows_keyboard_options(self, hold_key_ui, mocker):
+            """Test that toggle_key_type_ui shows keyboard options when keyboard is selected."""
+            keyboard_grid_mock = mocker.patch.object(hold_key_ui.hold_keyboard_key_entry, 'grid')
+            keyboard_grid_remove_mock = mocker.patch.object(hold_key_ui.hold_keyboard_key_entry, 'grid_remove')
+            mouse_grid_mock = mocker.patch.object(hold_key_ui.hold_mouse_key_optionmenu, 'grid')
+            mouse_grid_remove_mock = mocker.patch.object(hold_key_ui.hold_mouse_key_optionmenu, 'grid_remove')
+
+            ui = hold_key_ui
+
+            # Assert only mouse key option is visible initially
+            assert keyboard_grid_mock.is_not_called
+            assert keyboard_grid_remove_mock.is_not_called
+            assert mouse_grid_mock.is_called
+            assert mouse_grid_remove_mock.is_not_called
+
+            keyboard_grid_mock.reset_mock()
+            keyboard_grid_remove_mock.reset_mock()
+            mouse_grid_mock.reset_mock()
+            mouse_grid_remove_mock.reset_mock()
+
+            ui.toggle_key_type_ui()
+
+            # Assert keyboard key option is now visible, mouse key option is hidden
+            assert keyboard_grid_mock.is_called
+            assert keyboard_grid_remove_mock.is_not_called
+            assert mouse_grid_mock.is_not_called
+            assert mouse_grid_remove_mock.is_called
+
+            keyboard_grid_mock.reset_mock()
+            keyboard_grid_remove_mock.reset_mock()
+            mouse_grid_mock.reset_mock()
+            mouse_grid_remove_mock.reset_mock()
+
+            ui.toggle_key_type_ui()
+
+            # Assert keyboard key option is now hidden, mouse key option is now visible
+            assert keyboard_grid_mock.is_not_called
+            assert keyboard_grid_remove_mock.is_called
+            assert mouse_grid_mock.is_called
+            assert mouse_grid_remove_mock.is_not_called
+            
         def test_toggle_interval_ui_shows_interval_frame(self, hold_key_ui):
             """Test that toggle_interval_ui shows the interval frame when spam key is enabled."""
             ui = hold_key_ui
