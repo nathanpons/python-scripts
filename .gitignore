@@ -36,4 +36,7 @@ config/
 
 # Environment Variables
 .env
-*.tfvars
+*.
+
+# Debug
+debug_screenshots/
