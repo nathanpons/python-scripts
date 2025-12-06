@@ -155,6 +155,31 @@ class TestHoldKeyUI:
 
     class TestEntriesForHoldKey:
         """Test different entries for which key is held down."""
+        @pytest.mark.parametrize("key", [
+            "a", "Z", "5", " ", "`", "~", "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "-", "_", "=", "+", "[", "]", "{", "}", "\\", "|", ";", "'", "\"", ",", "<", ".", ">", "/", "?"
+        ])
+        def test_valid_keyboard_keys(self, key, hold_key_ui, mocker):
+            """Test that valid keyboard keys are accepted."""
+            ui = hold_key_ui
+
+            ui.hold_keyboard_key_var.get = mocker.Mock(return_value=key)
+
+            result = ui.validate_keyboard_key()
+
+            assert result is True
+
+        @pytest.mark.parametrize("key", [
+            "", "ab", "\n", "\t", "😊", "©", "12", "•",
+        ])
+        def test_invalid_keyboard_keys(self, key, hold_key_ui, mocker):
+            """Test that invalid keyboard keys are rejected."""
+            ui = hold_key_ui
+
+            ui.hold_keyboard_key_var.get = mocker.Mock(return_value=key)
+
+            result = ui.validate_keyboard_key()
+
+            assert result is False
 
     class TestHoldKeyUIToggleHold:
         """Tests for toggle_hold method."""
