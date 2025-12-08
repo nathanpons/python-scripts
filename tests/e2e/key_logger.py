@@ -1,7 +1,9 @@
 """
 Key logger for end-to-end tests.
 """
+import json
 import customtkinter as ctk
+from pathlib import Path
 from datetime import datetime
 
 class KeyLoggerWindow:
@@ -18,12 +20,14 @@ class KeyLoggerWindow:
         self.text_area.insert(ctk.END, "Key Logger Started...\n")
         self.text_area.configure(state=ctk.DISABLED)
         
+        self.key_log = []
+
+        self.log_file_path = Path(__file__).parent / "debug_files" / "key_log.txt"
+
         self.root.bind("<Key>", self.on_key_press)
         self.root.bind("<Button>", self.on_mouse_click)
         self.root.bind("<Button-2>", self.on_mouse_click)
         self.root.bind("<Button-3>", self.on_mouse_click)
-
-        self.key_log = []
 
     def on_key_press(self, event):
         """Logs the pressed key with a timestamp."""
@@ -43,6 +47,8 @@ class KeyLoggerWindow:
             "type": "key",
             "key": event.char or event.keysym
         })
+
+        self._write_log_to_file()
 
     def on_mouse_click(self, event):
         """Logs the mouse click with a timestamp."""
@@ -65,14 +71,27 @@ class KeyLoggerWindow:
             "button": button
         })
 
+        self._write_log_to_file()
+
+    def _write_log_to_file(self):
+        """Writes the key log to a file."""
+        try:
+            with open(self.log_file_path, "w") as f:
+                json.dump(self.key_log, f, indent=2)
+        except Exception as e:
+            print(f"Error writing log to file: {e}")
+
     def get_text_content(self):
         """Returns the content of the text area."""
         return self.text_area.get("1.0", ctk.END)
     
     def clear(self):
         """Clears the text area."""
+        self.text_area.configure(state=ctk.NORMAL)
         self.text_area.delete("1.0", ctk.END)
+        self.text_area.configure(state=ctk.DISABLED)
         self.key_log = []
+        self._write_log_to_file()
 
     def run(self):
         """Runs the key logger window."""
