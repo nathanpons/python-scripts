@@ -40,3 +40,4 @@ config/
 
 # Debug
 debug_screenshots/
+debug_files/
