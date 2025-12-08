@@ -213,6 +213,7 @@ class HoldKeyUI:
                 self.hold_keyboard_key_entry.configure(state="disabled")
                 self.toggle_key_optionmenu.configure(state="disabled")
                 self.spam_key_switch.configure(state="disabled")
+                self.interval_entry.configure(state="disabled")
                 self.toggle_script_button_text.set("Stop")
             except Exception as e:
                 logging.error(f"Failed to start Hold Key Script: {e}")
@@ -228,6 +229,7 @@ class HoldKeyUI:
                 self.hold_keyboard_key_entry.configure(state="normal")
                 self.toggle_key_optionmenu.configure(state="normal")
                 self.spam_key_switch.configure(state="normal")
+                self.interval_entry.configure(state="normal")
                 self.toggle_script_button_text.set("Start")
                 self.script = None
 
