@@ -1,18 +1,19 @@
 """
 Pytest configuration file.
 """
-
 import sys
-import pytest
-import requests
 import time
-import subprocess
+import json
+import pytest
 import psutil
-import pyautogui
 import logging
+import requests
+import keyboard
+import pyautogui
+import subprocess
 import customtkinter as ctk
+import pygetwindow as gw
 from pathlib import Path
-from PIL import ImageDraw
 
 logging.basicConfig(
     level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s"
@@ -88,7 +89,7 @@ def interact(reference_screenshots):
         def click_at(self, x, y, clicks=1, button='left'):
             """Click at specific coordinates."""
             pyautogui.click(x, y, clicks=clicks, button=button)
-            time.sleep(0.3)
+            time.sleep(0.2)
         
         def type_text(self, text, interval=0.1):
             """Type text with interval between keys."""
@@ -97,7 +98,7 @@ def interact(reference_screenshots):
         
         def press_key(self, key):
             """Press a single key."""
-            pyautogui.press(key)
+            keyboard.press_and_release(key)
             time.sleep(0.2)
 
         def find_on_screen(self, image_name, confidence=0.8, region=None, should_find=True):
@@ -134,16 +135,17 @@ def interact(reference_screenshots):
                     debug_screenshot.save(debug_path)
                 return None
         
-        def click_image(self, image_name, confidence=0.8, region=None):
+        def click_image(self, image_name, confidence=0.8, num_clicks=1,region=None):
             """Find and click an image on screen."""
             try:
                 image_path = self.reference_screenshots / "hold_key" / image_name
                 location = pyautogui.locateOnScreen(str(image_path), confidence=confidence, region=region)
                 if location:
                     x, y = pyautogui.center(location)
-                    self.click_at(x, y)
+                    for _ in range(num_clicks):
+                        self.click_at(x, y)
                     return True
-                return False
+                raise Exception("Image not found")
             except Exception as e:
                 logging.error(f"Error finding image {image_name} in region {region}: {e}")
                 debug_screenshot = pyautogui.screenshot(region=region)
@@ -195,6 +197,80 @@ def interact(reference_screenshots):
             logging.debug(f"Screenshot saved to {save_path}")
     
     return GUIInteractor(reference_screenshots)
+
+@pytest.fixture()
+def click_image_with_logging(interact):
+    """Helper to click an image with logging."""
+    def _click_image(image_name, confidence=0.8, num_clicks=1, region=None):
+        logging.debug(f"Attempting to click image: {image_name} with confidence {confidence}")
+        if not interact.click_image(image_name, confidence=confidence, num_clicks=num_clicks, region=region):
+            logging.error(f"Could not find image: {image_name}")
+            pytest.fail("Test Ended. Cannot proceed.")
+        
+        time.sleep(0.2)
+        
+    return _click_image
+
+@pytest.fixture()
+def key_logger_window():
+    """Launch a test window for logging key and mouse events."""
+    logger = Path(__file__).parent / "key_logger.py"
+    log_file = Path(__file__).parent / "debug_files" / "key_log.txt"
+
+    # Launch the key logger in a subprocess
+    process = subprocess.Popen(
+        [sys.executable, str(logger)],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE
+    )
+
+    # Wait for the window to initialize
+    time.sleep(2)
+
+    yield {"process": process, "log_file": log_file}
+
+    # Cleanup
+    try:
+        process.terminate()
+        process.wait(timeout=3)
+    except:
+        process.kill()
+        
+@pytest.fixture()
+def read_key_log():
+    """Helper to read the key log JSON file."""
+    def _read(log_file_path):
+        """Read and parse the key log file."""
+        if not log_file_path.exists():
+            return []
+        
+        try:
+            with open(log_file_path, 'r') as f:
+                return json.load(f)
+        except json.JSONDecodeError:
+            return []
+        except Exception as e:
+            logging.error(f"Error reading key log: {e}")
+            return []
+    
+    return _read
+
+@pytest.fixture()
+def focus_window():
+    """Helper to focus a window by title."""
+    def _focus_window(title):
+        try:
+            windows = gw.getWindowsWithTitle(title)
+            if windows:
+                window = windows[0]
+                window.activate()
+                time.sleep(0.5)  # Wait for focus to take effect
+                return True
+        except Exception as e:
+            logging.error(f"Error focusing window: {e}")
+        return False
+    
+    return _focus_window
 
 @pytest.fixture(autouse=True, scope="session")
 def clear_debug_screenshots():
