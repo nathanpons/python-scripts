@@ -124,9 +124,7 @@ class TestHoldKeyE2E:
         # # Set Interval to "200"
         # # Click Start
         # # Open Key Logger Window
-        # # Focus Key Logger Window
-        # # Press Toggle Key (F7)
-        # # Wait one second
+        # # Turn script on for one second
         # # Verify "b" is being pressed at ~200ms intervals in Key Logger Window
         
         # Click Dropdown
@@ -134,14 +132,6 @@ class TestHoldKeyE2E:
         dropdown_y = top + (height * 0.3)
         interact.click_at(dropdown_x, dropdown_y)
         time.sleep(0.2)
-        
-        # # Search within dropdown area only
-        # dropdown_region = (
-        #     int(left + width * 0.2),
-        #     int(top + height * 0.25),
-        #     int(width * 0.6),
-        #     int(height * 0.4)
-        # )
         
         # Select Hold Key 
         click_image_with_logging('hold_key_option.png', confidence=0.9, region=window_region)
