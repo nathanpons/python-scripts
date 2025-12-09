@@ -99,6 +99,70 @@ class TestHoldKeyE2E:
         # Verify app is still running
         assert interact.get_window_region("Nathan's Python Scripts") is not None
 
+    def test_default_settings(self, app_process, interact, click_image_with_logging, key_logger_window, read_key_log, focus_window):
+        time.sleep(0.5)
+
+        log_file = key_logger_window["log_file"]
+        focus_window("Nathan's Python Scripts")
+
+        # Map the Key Logger window
+        logger_window_region = interact.get_window_region("Key Logger")
+        if not logger_window_region:
+            pytest.skip("Could not find Key Logger window")
+        
+        logger_left, logger_top, logger_width, logger_height = logger_window_region
+
+        # Map the application window
+        window_region = interact.get_window_region("Nathan's Python Scripts")
+        if not window_region:
+            pytest.skip("Could not find application window")
+        
+        left, top, width, height = window_region
+
+        # USER STEPS
+        
+        # # Click Dropdown
+        # # Select Hold Key
+        # # Click Start
+        # # Open Key Logger Window
+        # # Turn script on for one second
+        # # Verify Left Click is only pressed once
+
+        # Click Dropdown
+        dropdown_x = left + (width * 0.5)
+        dropdown_y = top + (height * 0.3)
+        interact.click_at(dropdown_x, dropdown_y)
+        time.sleep(0.2)
+
+        # Select Hold Key 
+        click_image_with_logging('hold_key_option.png', confidence=0.9, region=window_region)
+        
+        # Click Start
+        click_image_with_logging('start_button.png', region=window_region)
+
+        # Focus Key Logger Window
+        focus_window("Key Logger")
+        interact.click_at(logger_left + (logger_width * 0.5), logger_top + (logger_height * 0.5))
+        time.sleep(0.2)
+
+        # Press Toggle Key
+        interact.press_key("f8")
+        time.sleep(1)
+        interact.press_key("f8")
+
+        # Verify "left click" is only pressed once
+        key_log = read_key_log(log_file)
+
+        key_presses = []
+        for entry in key_log:
+            logging.debug(f"Log Entry: {entry}")
+            if entry["type"] == "mouse" and entry["button"] == "Left":
+                key_presses.append(entry)
+        
+
+        # Assertions
+        assert len(key_presses) == 2, f"Expected two 'left mouse' clicks, found {len(key_presses)}"
+
     def test_custom_settings(self, app_process, interact, click_image_with_logging, key_logger_window, read_key_log, focus_window):
         """Test that the correct key is being pressed with custom key and interval."""
         time.sleep(0.5)
@@ -132,7 +196,7 @@ class TestHoldKeyE2E:
         dropdown_y = top + (height * 0.3)
         interact.click_at(dropdown_x, dropdown_y)
         time.sleep(0.2)
-        
+
         # Select Hold Key 
         click_image_with_logging('hold_key_option.png', confidence=0.9, region=window_region)
         
