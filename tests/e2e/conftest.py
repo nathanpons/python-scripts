@@ -98,8 +98,12 @@ def interact(reference_screenshots):
         
         def press_key(self, key):
             """Press a single key."""
-            keyboard.press_and_release(key)
-            time.sleep(0.2)
+            try:
+                logging.debug(f"Pressing key: {key}")
+                keyboard.press_and_release(key)
+                time.sleep(0.2)
+            except Exception as e:
+                logging.error(f"Error pressing key {key}: {e}")
 
         def find_on_screen(self, image_name, confidence=0.8, region=None, should_find=True):
             """
