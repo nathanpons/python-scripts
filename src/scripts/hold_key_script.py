@@ -9,6 +9,7 @@ logging.basicConfig(
 )
 
 MOUSE_KEYS = {"left mouse": "left", "right mouse": "right", "middle mouse": "middle"}
+MODIFIER_KEYS = {"ctrl", "alt", "shift", "control"}
 
 
 class HoldKeyScript:
@@ -23,6 +24,7 @@ class HoldKeyScript:
         self.hold_key = hold_key
         self.toggle_key = toggle_key
         self.is_mouse_key = self.hold_key in MOUSE_KEYS
+        self.is_modifier_key = self.hold_key in MODIFIER_KEYS
 
     def hold_key_loop(self):
         """Main loop that holds or spams a key"""
@@ -44,7 +46,9 @@ class HoldKeyScript:
                         logging.debug(f"Released '{self.hold_key}' key.")
 
                     if self.toggle and self.is_spam_key:
-                        keyboard.press_and_release(self.hold_key)
+                        keyboard.press(self.hold_key)
+                        time.sleep(0.05)  # Short delay to simulate key press
+                        keyboard.release(self.hold_key)
                         logging.debug(f"Pressing '{self.hold_key}'.")
 
                 else:

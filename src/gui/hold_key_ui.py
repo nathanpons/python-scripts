@@ -6,6 +6,8 @@ logging.basicConfig(
     level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s"
 )
 
+MODIFIER_KEYS = {"ctrl", "alt", "shift", "control"}
+
 
 class HoldKeyUI:
     def __init__(self, parent_frame):
@@ -251,6 +253,13 @@ class HoldKeyUI:
         valid_keyboard_keys = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789`~!@#$%^&*()-_=+[{]}\\|;:'\",<.>/? "
 
         logging.debug(f"Validating hold keyboard key: '{key}'")
+
+        if key in MODIFIER_KEYS:
+            logging.debug(f"Key found in modifier keys: '{key}'")
+            logging.debug(f"Validated hold keyboard key '{key}' successful")
+            self.validate_keyboard_key_error_label.configure(text="")
+            self.validate_keyboard_key_error_label.grid_remove()
+            return True
 
         if len(key) != 1:
             logging.error("Hold keyboard key must be a single character.")
