@@ -1,20 +1,25 @@
 """
 Tests for hold_key_script.py
 """
+
 import sys
 import pytest
 from src.scripts.hold_key_script import HoldKeyScript, MOUSE_KEYS
+
 
 @pytest.fixture
 def script():
     """Fixture to set up HoldKeyScript instance for tests."""
     script = HoldKeyScript()
     yield script
-    
+
+
 class TestHoldKeyScript:
     """Tests for the HoldKeyScript class."""
+
     class TestHoldKeyScriptInitialization:
         """Test initialization of HoldKeyScript."""
+
         def test_default_initialization(self, script):
             """Test that HoldKeyScript initializes with default parameters."""
             assert script.hold_key == "w"
@@ -67,12 +72,13 @@ class TestHoldKeyScript:
         def test_multiple_toggles(self, script):
             """Test multiple toggles of the hold state."""
             for i in range(5):
-                expected = (i % 2 == 0)
+                expected = i % 2 == 0
                 script.toggle_hold()
                 assert script.toggle is expected
 
     class TestMouseKeys:
         """Test MOUSE_KEYS dictionary."""
+
         def test_mouse_keys_mapping(self):
             """Test that MOUSE_KEYS contains correct mappings."""
             assert MOUSE_KEYS["left mouse"] == "left"
@@ -83,14 +89,17 @@ class TestHoldKeyScript:
             """Test that MOUSE_KEYS contains exactly three entries."""
             assert len(MOUSE_KEYS) == 3
 
-        @pytest.mark.parametrize("hold_key,is_mouse", [
-            ("w", False),
-            ("a", False),
-            ("space", False),
-            ("left mouse", True),
-            ("right mouse", True),
-            ("middle mouse", True),
-        ])
+        @pytest.mark.parametrize(
+            "hold_key,is_mouse",
+            [
+                ("w", False),
+                ("a", False),
+                ("space", False),
+                ("left mouse", True),
+                ("right mouse", True),
+                ("middle mouse", True),
+            ],
+        )
         def test_key_type_detection(self, hold_key, is_mouse):
             """Test that various keys are correctly identified"""
             script = HoldKeyScript(hold_key=hold_key)
@@ -183,7 +192,7 @@ class TestHoldKeyScript:
             assert script.toggle is False
             mock_keyboard.release.assert_called_with("s")
 
-    class TestHoldKeyLoopKeyboard():
+    class TestHoldKeyLoopKeyboard:
         def test_hold_key_loop_hold(self, mocker):
             """Test that keyboard key is pressed and released."""
             mock_keyboard = mocker.patch("src.scripts.hold_key_script.keyboard")
@@ -218,10 +227,11 @@ class TestHoldKeyScript:
             script.toggle = True
 
             call_count = [0]
+
             # Run for 3 iterations
             def side_effect(*args):
                 call_count[0] += 1
-                if call_count[0] >= 3:
+                if call_count[0] >= 6:
                     script.is_running = False
                     script.toggle = False
 
@@ -229,9 +239,10 @@ class TestHoldKeyScript:
 
             script.hold_key_loop()
 
-            assert mock_keyboard.press_and_release.call_count >= 3
+            assert mock_keyboard.press.call_count >= 3
+            assert mock_keyboard.release.call_count >= 3
 
-    class TestHoldKeyLoopMouse():
+    class TestHoldKeyLoopMouse:
         def test_hold_key_loop_hold(self, mocker):
             """Test that mouse button is pressed and released."""
             mock_pyautogui = mocker.patch("src.scripts.hold_key_script.pyautogui")
@@ -266,12 +277,14 @@ class TestHoldKeyScript:
             script.toggle = True
 
             call_count = [0]
+
             # Run for 3 iterations
             def side_effect(*args):
                 call_count[0] += 1
                 if call_count[0] >= 3:
                     script.is_running = False
                     script.toggle = False
+
             mock_sleep.side_effect = side_effect
 
             script.hold_key_loop()
@@ -287,22 +300,27 @@ class TestHoldKeyScript:
 
             assert script.is_mouse_key is False
 
-        @pytest.mark.parametrize("interval,raises", [
-            (-100, True),
-            (-0.00000000001, True),
-            (0, True),
-            (sys.float_info.min, False),
-            (0.00000000001, False),
-            (100, False),
-            (sys.float_info.max, False),
-            ])
+        @pytest.mark.parametrize(
+            "interval,raises",
+            [
+                (-100, True),
+                (-0.00000000001, True),
+                (0, True),
+                (sys.float_info.min, False),
+                (0.00000000001, False),
+                (100, False),
+                (sys.float_info.max, False),
+            ],
+        )
         def test_interval_borders(self, interval, raises):
             """Test different interval values."""
             script = HoldKeyScript(interval=interval)
 
             assert script.interval == interval
             if raises:
-                with pytest.raises(ValueError, match="Interval must be a positive number."):
+                with pytest.raises(
+                    ValueError, match="Interval must be a positive number."
+                ):
                     script.start()
 
         def test_exception_in_loop(self, script, mocker):
@@ -324,4 +342,3 @@ class TestHoldKeyScript:
 
             mock_logging.error.assert_called_once()
             assert "Test Exception" in str(mock_logging.error.call_args)
-
