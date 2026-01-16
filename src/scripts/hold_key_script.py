@@ -8,13 +8,8 @@ logging.basicConfig(
     level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s"
 )
 
-MOUSE_KEYS = {
-    "left mouse": "left",
-    "right mouse": "right",
-    "middle mouse": "middle"
-}
+MOUSE_KEYS = {"left mouse": "left", "right mouse": "right", "middle mouse": "middle"}
 
-# TODO: Add list of all valid keyboard keys for validation
 
 class HoldKeyScript:
     def __init__(self, hold_key="w", toggle_key="f6", is_spam_key=False, interval=0.01):
@@ -64,7 +59,7 @@ class HoldKeyScript:
                     elif not self.toggle and self.previous_toggle:
                         pyautogui.mouseUp(button=mouse_button)
                         logging.debug(f"Released '{self.hold_key}' mouse button.")
-                    
+
                     if self.toggle and self.is_spam_key:
                         pyautogui.click(button=mouse_button)
                         logging.debug(f"Clicking '{self.hold_key}' mouse button.")
@@ -84,7 +79,9 @@ class HoldKeyScript:
                 raise ValueError("Interval must be a positive number.")
             if not self.is_running:
                 self.is_running = True
-                self.hotkey_handler = keyboard.add_hotkey(self.toggle_key, self.toggle_hold)
+                self.hotkey_handler = keyboard.add_hotkey(
+                    self.toggle_key, self.toggle_hold
+                )
                 self.thread = threading.Thread(target=self.hold_key_loop, daemon=True)
                 self.thread.start()
         except ValueError as e:
