@@ -1,4 +1,4 @@
-# Build Python Scripts Artifact
+# Create Python Scripts Release
 
 ## Launch local virtual environment
 
@@ -6,7 +6,7 @@
   .env\Scripts\activate.ps1
 ```
 
-## Build App
+## Build App Artifact
 
 ```bash
   pyinstaller PythonScripts.spec
