@@ -140,7 +140,7 @@ class HoldKeyUI:
         )
         self.interval_entry.grid(row=7, column=0, sticky="w", padx=5)
 
-        # Interval error label
+        # Interval between presses error label
         self.interval_error_label = ctk.CTkLabel(
             config_frame,
             text="",
@@ -164,6 +164,15 @@ class HoldKeyUI:
             font=self.default_font,
         )
         self.press_interval_entry.grid(row=9, column=0, sticky="w", padx=5)
+
+        # Interval for how long the button is held error label
+        self.press_interval_error_label = ctk.CTkLabel(
+            config_frame,
+            text="",
+            font=self.default_font,
+            text_color="red",
+            wraplength=300,
+        )
 
         self.interval_frame_visible = False
 
@@ -200,8 +209,20 @@ class HoldKeyUI:
 
                 # Validate inputs
                 if self.is_spam_key_var.get():
-                    if not self.validate_interval():
+                    if not self.validate_integer_is_positive(
+                        self.interval_var_milliseconds.get(),
+                        self.interval_error_label,
+                        7,
+                    ):
                         raise ValueError("Interval value must be a positive integer.")
+                    if not self.validate_integer_is_positive(
+                        self.press_interval_milliseconds.get(),
+                        self.press_interval_error_label,
+                        9,
+                    ):
+                        raise ValueError(
+                            "Press interval value must be a positive integer."
+                        )
 
                 if self.key_type_var.get() == "keyboard":
                     if not self.validate_keyboard_key():
@@ -271,6 +292,8 @@ class HoldKeyUI:
         self.validate_keyboard_key_error_label.grid_remove()
         self.interval_error_label.configure(text="")
         self.interval_error_label.grid_remove()
+        self.press_interval_error_label.configure(text="")
+        self.press_interval_error_label.grid_remove()
 
     def validate_keyboard_key(self):
         """Validates that the hold keyboard key is a single character."""
@@ -318,30 +341,28 @@ class HoldKeyUI:
         self.validate_keyboard_key_error_label.grid_remove()
         return True
 
-    def validate_interval(self):
-        """Validates that the interval input is a positive integer."""
+    def validate_integer_is_positive(self, value, error_label, error_label_row):
+        """Validates that the inputs are positive integers."""
         try:
-            value = int(self.interval_var_milliseconds.get())
-            logging.debug(f"Validating interval value: {value}")
+            logging.debug(f"Validating value: {value}")
+            value = int(value)
 
             if value <= 0:
-                raise ValueError("Interval must be a positive integer.")
+                raise ValueError("Value must be a positive integer.")
 
-            logging.debug(f"Validated interval: {value} milliseconds.")
-            self.interval_error_label.configure(text="")
-            self.interval_error_label.grid_remove()
+            logging.debug(f"Validated value successfully: {value}")
+            error_label.configure(text="")
+            error_label.grid_remove()
             return True
         except (ValueError, TypeError):
-            logging.error("Interval value must be a positive integer.")
-            self.interval_error_label.configure(
-                text="Error: \nInterval must be a positive integer."
-            )
-            self.interval_error_label.grid(
-                row=7, column=0, columnspan=2, padx=5, pady=2
+            logging.error("Value must be a positive integer.")
+            error_label.configure(text="Error: \nMust be a positive integer.")
+            error_label.grid(
+                row=error_label_row, column=0, columnspan=2, padx=5, pady=2
             )
             return False
         except Exception as e:
-            logging.error(f"Unexpected error during interval validation: {e}")
+            logging.error(f"Unexpected error during integer validation: {e}")
             return False
 
     def toggle_interval_ui(self):
