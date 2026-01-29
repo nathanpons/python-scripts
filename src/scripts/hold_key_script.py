@@ -13,13 +13,21 @@ MODIFIER_KEYS = {"ctrl", "alt", "shift", "control"}
 
 
 class HoldKeyScript:
-    def __init__(self, hold_key="w", toggle_key="f6", is_spam_key=False, interval=0.01):
+    def __init__(
+        self,
+        hold_key="w",
+        toggle_key="f6",
+        is_spam_key=False,
+        interval=0.01,
+        press_interval=0.01,
+    ):
         self.thread = None
         self.hotkey_handler = None
         self.toggle = False
         self.is_running = False
         self.previous_toggle = False
         self.interval = interval
+        self.press_interval = press_interval
         self.is_spam_key = is_spam_key
         self.hold_key = hold_key
         self.toggle_key = toggle_key
@@ -47,7 +55,9 @@ class HoldKeyScript:
 
                     if self.toggle and self.is_spam_key:
                         keyboard.press(self.hold_key)
-                        time.sleep(0.05)  # Short delay to simulate key press
+                        time.sleep(
+                            self.press_interval
+                        )  # Short delay to simulate key press
                         keyboard.release(self.hold_key)
                         logging.debug(f"Pressing '{self.hold_key}'.")
 

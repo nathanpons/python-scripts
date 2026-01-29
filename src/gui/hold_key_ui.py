@@ -117,7 +117,7 @@ class HoldKeyUI:
         )
         self.spam_key_switch.grid(row=4, columnspan=2, pady=5)
 
-        # Interval settings
+        # Interval between key presses
         self.interval_frame = ctk.CTkFrame(config_frame)
         self.interval_frame_label = ctk.CTkLabel(
             self.interval_frame,
@@ -129,7 +129,7 @@ class HoldKeyUI:
         self.interval_var_milliseconds = ctk.StringVar(value="10")
         self.interval_label = ctk.CTkLabel(
             self.interval_frame,
-            text="Milliseconds:",
+            text="Milliseconds between presses:",
             font=self.default_font,
         )
         self.interval_label.grid(row=6, column=0, sticky="w", padx=5)
@@ -138,7 +138,7 @@ class HoldKeyUI:
             textvariable=self.interval_var_milliseconds,
             font=self.default_font,
         )
-        self.interval_entry.grid(row=6, column=1, sticky="w", padx=5)
+        self.interval_entry.grid(row=7, column=0, sticky="w", padx=5)
 
         # Interval error label
         self.interval_error_label = ctk.CTkLabel(
@@ -148,6 +148,23 @@ class HoldKeyUI:
             text_color="red",
             wraplength=300,
         )
+
+        # Interval for how long the button is held down
+        self.press_interval_milliseconds = ctk.StringVar(value="5")
+        self.press_interval_label = ctk.CTkLabel(
+            self.interval_frame,
+            text="Milliseconds button is held:",
+            font=self.default_font,
+        )
+        self.press_interval_label.grid(row=8, column=0, sticky="w", padx=5)
+
+        self.press_interval_entry = ctk.CTkEntry(
+            self.interval_frame,
+            textvariable=self.press_interval_milliseconds,
+            font=self.default_font,
+        )
+        self.press_interval_entry.grid(row=9, column=0, sticky="w", padx=5)
+
         self.interval_frame_visible = False
 
         # Control buttons
@@ -198,12 +215,19 @@ class HoldKeyUI:
                 toggle_key = self.toggle_key_var.get()
                 is_spam_key = self.is_spam_key_var.get()
                 interval_milliseconds = int(self.interval_var_milliseconds.get())
+                press_interval_milliseconds = int(
+                    self.press_interval_milliseconds.get()
+                )
                 interval = interval_milliseconds / 1000.0  # Convert to seconds
+                press_interval = (
+                    press_interval_milliseconds / 1000.0
+                )  # Convert to seconds
                 self.script = HoldKeyScript(
                     hold_key=hold_key,
                     toggle_key=toggle_key,
                     is_spam_key=is_spam_key,
                     interval=interval,
+                    press_interval=press_interval,
                 )
                 logging.debug(
                     f"Starting Hold Key Script with hold_key='{hold_key}' and toggle_key='{toggle_key}' with is_spam_key={is_spam_key}"
@@ -216,6 +240,7 @@ class HoldKeyUI:
                 self.toggle_key_optionmenu.configure(state="disabled")
                 self.spam_key_switch.configure(state="disabled")
                 self.interval_entry.configure(state="disabled")
+                self.press_interval_entry.configure(state="disabled")
                 self.toggle_script_button_text.set("Stop")
             except Exception as e:
                 logging.error(f"Failed to start Hold Key Script: {e}")
@@ -232,6 +257,7 @@ class HoldKeyUI:
                 self.toggle_key_optionmenu.configure(state="normal")
                 self.spam_key_switch.configure(state="normal")
                 self.interval_entry.configure(state="normal")
+                self.press_interval_entry.configure(state="normal")
                 self.toggle_script_button_text.set("Start")
                 self.script = None
 
