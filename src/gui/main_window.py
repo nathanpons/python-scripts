@@ -115,9 +115,7 @@ class MainWindow:
 
     def setup_weather_ui(self):
         """Sets up the UI for the Weather script."""
-        self.current_ui = WeatherUI(
-            self.dynamic_content_frame
-        )
+        self.current_ui = WeatherUI(self.dynamic_content_frame)
         width, height = 1000, 600
         if self.root.winfo_width() < width and self.root.winfo_height() < height:
             self.root.geometry(f"{width}x{height}")
@@ -125,9 +123,7 @@ class MainWindow:
 
     def setup_recipe_ui(self):
         """Sets up the UI for the Recipe Finder script."""
-        self.current_ui = RecipeUI(
-            self.dynamic_content_frame
-        )
+        self.current_ui = RecipeUI(self.dynamic_content_frame)
         width, height = 1000, 600
         if self.root.winfo_width() < width and self.root.winfo_height() < height:
             self.root.geometry(f"{width}x{height}")
