@@ -1,24 +1,26 @@
 """
 Tests for hold_key_ui.py
 """
+
 import pytest
 from unittest.mock import Mock, patch
 from src.gui.hold_key_ui import HoldKeyUI
 
+
 @pytest.fixture
 def hold_key_ui(mocker):
     """Fixture to set up HoldKeyUI instance for tests."""
-    mocker.patch('keyboard.add_hotkey')
-    mocker.patch('keyboard.remove_hotkey')
-    mocker.patch('keyboard.press')
-    mocker.patch('keyboard.release')
-    mocker.patch('keyboard.is_pressed', return_value=False)
-    
-    mocker.patch('pyautogui.mouseDown')
-    mocker.patch('pyautogui.mouseUp')
-    mocker.patch('pyautogui.click')
+    mocker.patch("keyboard.add_hotkey")
+    mocker.patch("keyboard.remove_hotkey")
+    mocker.patch("keyboard.press")
+    mocker.patch("keyboard.release")
+    mocker.patch("keyboard.is_pressed", return_value=False)
 
-    mock_thread = mocker.patch('threading.Thread')
+    mocker.patch("pyautogui.mouseDown")
+    mocker.patch("pyautogui.mouseUp")
+    mocker.patch("pyautogui.click")
+
+    mock_thread = mocker.patch("threading.Thread")
     mock_thread.return_value.start = mocker.Mock()
     mock_thread.return_value.join = mocker.Mock()
 
@@ -29,10 +31,13 @@ def hold_key_ui(mocker):
 
     hold_key_ui.cleanup()
 
+
 class TestHoldKeyUI:
     """Tests for HoldKeyUI class."""
+
     class TestHoldKeyUIInitialization:
         """Tests for HoldKeyUI initialization."""
+
         def test_initialization(self, hold_key_ui):
             """Test that HoldKeyUI initializes correctly."""
             ui = hold_key_ui
@@ -60,8 +65,11 @@ class TestHoldKeyUI:
 
     class TestHoldKeyUIToggleScript:
         """Tests for toggle_script method."""
+
         @patch("src.gui.hold_key_ui.HoldKeyScript")
-        def test_toggle_script_starts_script(self, mock_hold_key_script, hold_key_ui, mocker):
+        def test_toggle_script_starts_script(
+            self, mock_hold_key_script, hold_key_ui, mocker
+        ):
             """Test that toggle_script starts the script when not running."""
             ui = hold_key_ui
 
@@ -89,7 +97,7 @@ class TestHoldKeyUI:
         def test_toggle_script_multiple_times(self, mock_hold_key_script, hold_key_ui):
             """Test that toggle_script starts and stops the script multiple times"""
             ui = hold_key_ui
-            
+
             mock_script_instance = mock_hold_key_script.return_value
             mock_script_instance.is_running = False
 
@@ -108,9 +116,11 @@ class TestHoldKeyUI:
 
             ui.toggle_script()
             assert mock_script_instance.stop.call_count == 2
-            
+
         @patch("src.gui.hold_key_ui.HoldKeyScript")
-        def test_toggle_script_ui_updates_on_start(self, mock_hold_key_script, hold_key_ui):
+        def test_toggle_script_ui_updates_on_start(
+            self, mock_hold_key_script, hold_key_ui
+        ):
             """Test that toggle_script updates UI components correctly on start."""
             ui = hold_key_ui
 
@@ -120,20 +130,24 @@ class TestHoldKeyUI:
 
             mock_script_instance = mock_hold_key_script.return_value
             mock_script_instance.is_running = False
-            
+
             ui.toggle_script()
 
             ui.toggle_script_button_text.set.assert_called_with("Stop")
-            
+
             ui.status_label.configure.assert_called_with(text="Status: Running")
             ui.key_type_switch.configure.assert_called_with(state="disabled")
             ui.hold_keyboard_key_entry.configure.assert_called_with(state="disabled")
             ui.hold_mouse_key_optionmenu.configure.assert_called_with(state="disabled")
             ui.toggle_key_optionmenu.configure.assert_called_with(state="disabled")
             ui.spam_key_switch.configure.assert_called_with(state="disabled")
+            ui.interval_entry.configure.assert_called_with(state="disabled")
+            ui.press_interval_entry.configure.assert_called_with(state="disabled")
 
         @patch("src.gui.hold_key_ui.HoldKeyScript")
-        def test_toggle_script_ui_updates_on_stop(self, mock_hold_key_script, hold_key_ui):
+        def test_toggle_script_ui_updates_on_stop(
+            self, mock_hold_key_script, hold_key_ui
+        ):
             """Test that toggle_script updates UI components correctly on stop."""
             ui = hold_key_ui
 
@@ -145,7 +159,7 @@ class TestHoldKeyUI:
             ui.toggle_script()
 
             ui.toggle_script_button_text.set.assert_called_with("Start")
-            
+
             ui.status_label.configure.assert_called_with(text="Status: Stopped")
             ui.key_type_switch.configure.assert_called_with(state="normal")
             ui.hold_keyboard_key_entry.configure.assert_called_with(state="normal")
@@ -155,9 +169,47 @@ class TestHoldKeyUI:
 
     class TestEntriesForHoldKey:
         """Test different entries for which key is held down."""
-        @pytest.mark.parametrize("key", [
-            "a", "Z", "5", " ", "`", "~", "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "-", "_", "=", "+", "[", "]", "{", "}", "\\", "|", ";", "'", "\"", ",", "<", ".", ">", "/", "?"
-        ])
+
+        @pytest.mark.parametrize(
+            "key",
+            [
+                "a",
+                "Z",
+                "5",
+                " ",
+                "`",
+                "~",
+                "!",
+                "@",
+                "#",
+                "$",
+                "%",
+                "^",
+                "&",
+                "*",
+                "(",
+                ")",
+                "-",
+                "_",
+                "=",
+                "+",
+                "[",
+                "]",
+                "{",
+                "}",
+                "\\",
+                "|",
+                ";",
+                "'",
+                '"',
+                ",",
+                "<",
+                ".",
+                ">",
+                "/",
+                "?",
+            ],
+        )
         def test_valid_keyboard_keys(self, key, hold_key_ui, mocker):
             """Test that valid keyboard keys are accepted."""
             ui = hold_key_ui
@@ -168,9 +220,19 @@ class TestHoldKeyUI:
 
             assert result is True
 
-        @pytest.mark.parametrize("key", [
-            "", "ab", "\n", "\t", "😊", "©", "12", "•",
-        ])
+        @pytest.mark.parametrize(
+            "key",
+            [
+                "",
+                "ab",
+                "\n",
+                "\t",
+                "😊",
+                "©",
+                "12",
+                "•",
+            ],
+        )
         def test_invalid_keyboard_keys(self, key, hold_key_ui, mocker):
             """Test that invalid keyboard keys are rejected."""
             ui = hold_key_ui
@@ -183,6 +245,7 @@ class TestHoldKeyUI:
 
     class TestHoldKeyUIToggleHold:
         """Tests for toggle_hold method."""
+
         def test_toggle_hold_when_running(self, hold_key_ui):
             """Test that toggle_hold calls script.toggle_hold when running."""
             ui = hold_key_ui
@@ -197,12 +260,21 @@ class TestHoldKeyUI:
 
     class TestSwitchChildVisibility:
         """Tests for switches that cause other UI components to show or hide."""
+
         def test_toggle_key_type_ui_shows_keyboard_options(self, hold_key_ui, mocker):
             """Test that toggle_key_type_ui shows keyboard options when keyboard is selected."""
-            keyboard_grid_mock = mocker.patch.object(hold_key_ui.hold_keyboard_key_entry, 'grid')
-            keyboard_grid_remove_mock = mocker.patch.object(hold_key_ui.hold_keyboard_key_entry, 'grid_remove')
-            mouse_grid_mock = mocker.patch.object(hold_key_ui.hold_mouse_key_optionmenu, 'grid')
-            mouse_grid_remove_mock = mocker.patch.object(hold_key_ui.hold_mouse_key_optionmenu, 'grid_remove')
+            keyboard_grid_mock = mocker.patch.object(
+                hold_key_ui.hold_keyboard_key_entry, "grid"
+            )
+            keyboard_grid_remove_mock = mocker.patch.object(
+                hold_key_ui.hold_keyboard_key_entry, "grid_remove"
+            )
+            mouse_grid_mock = mocker.patch.object(
+                hold_key_ui.hold_mouse_key_optionmenu, "grid"
+            )
+            mouse_grid_remove_mock = mocker.patch.object(
+                hold_key_ui.hold_mouse_key_optionmenu, "grid_remove"
+            )
 
             ui = hold_key_ui
 
@@ -262,49 +334,42 @@ class TestHoldKeyUI:
 
     class TestHoldKeyUIIntervalValidation:
         """Tests for HoldKeyUI logic methods."""
+
         def test_interval_frame_initially_hidden(self, hold_key_ui):
             """Test that the interval frame is initially hidden."""
             ui = hold_key_ui
 
             assert ui.interval_frame_visible is False
 
-        @pytest.mark.parametrize("invalid_value", [
-            "-10", 
-            -1,
-            "0",
-            "0.1",
-            "10.5",
-            "9.2*10^4",
-            "abc",
-            "",
-            None
-        ])
-        def test_invalid_interval_values(self, invalid_value, hold_key_ui):
+        @pytest.mark.parametrize(
+            "invalid_value",
+            ["-10", -1, "0", "0.1", "10.5", "9.2*10^4", "abc", "", None],
+        )
+        def test_invalid_interval_values(self, invalid_value, hold_key_ui, mocker):
             """Test that setting an invalid interval shows an error."""
             ui = hold_key_ui
+            mock_error_label = mocker.Mock()
 
-            ui.interval_var_milliseconds.get.return_value = invalid_value
-
-            result = ui.validate_interval()
+            result = ui.validate_integer_is_positive(
+                invalid_value, mock_error_label, mock_error_label
+            )
 
             assert result is False
 
-        @pytest.mark.parametrize("valid_value", [
-            "1", 
-            1,
-            "100", 
-            "4000000"
-            ])
-        def test_valid_interval_values(self, valid_value, hold_key_ui):
+        @pytest.mark.parametrize("valid_value", ["1", 1, "100", "4000000"])
+        def test_valid_interval_values(self, valid_value, hold_key_ui, mocker):
             """Test that setting a valid interval passes validation."""
             ui = hold_key_ui
+            mock_error_label = mocker.Mock()
 
             ui.interval_var_milliseconds.get.return_value = valid_value
 
-            result = ui.validate_interval()
+            result = ui.validate_integer_is_positive(
+                valid_value, mock_error_label, mock_error_label
+            )
 
             assert result is True
-            
+
     class TestHoldKeyUICleanup:
         @patch("src.gui.hold_key_ui.HoldKeyScript")
         def test_cleanup_stops_running_script(self, mock_hold_key_script, hold_key_ui):
@@ -320,7 +385,9 @@ class TestHoldKeyUI:
             mock_script_instance.stop.assert_called_once()
 
         @patch("src.gui.hold_key_ui.HoldKeyScript")
-        def test_cleanup_does_nothing_if_script_not_running(self, mock_hold_key_script, hold_key_ui):
+        def test_cleanup_does_nothing_if_script_not_running(
+            self, mock_hold_key_script, hold_key_ui
+        ):
             """Test that cleanup does nothing if the script is not running."""
             ui = hold_key_ui
 
