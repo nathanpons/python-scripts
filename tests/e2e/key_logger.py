@@ -33,7 +33,7 @@ class KeyLoggerWindow:
 
     def on_key_press(self, event):
         """Logs the pressed key with a timestamp."""
-        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S:%f")[:-3]
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
         log_entry = f"[{timestamp}] Key: {event.char or event.keysym}\n"
 
         # Enable editing temporarily
@@ -52,7 +52,7 @@ class KeyLoggerWindow:
 
     def on_mouse_click(self, event):
         """Logs the mouse click with a timestamp."""
-        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S:%f")[:-3]
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
         button_map = {1: "Left", 2: "Middle", 3: "Right"}
         button = button_map.get(event.num, "Unknown")
         log_entry = f"[{timestamp}] - Mouse: {button} click at ({event.x}, {event.y})\n"
